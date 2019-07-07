@@ -3,7 +3,7 @@ Display the robot on a VEX field using information from Okapilib odometry and LV
 
 <img src="https://github.com/theol0403/odomDebug/raw/master/odomDebug.png" align="center" title="odomDebug" width="480" height="272">
 
-## Instalation
+## Installation
 ### Building for External Project
 To build, clone the repository and run `prosv5 make template`.
 
