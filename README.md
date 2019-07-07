@@ -1,8 +1,9 @@
 # OdomDebug
-Display the robot on a VEX feild using information from Okapilib odometry and LVGL.
+Display the robot on a VEX field using information from Okapilib odometry and LVGL.
 ## Instalation
 ### Building for an external project
 To build, clone the repository and run `prosv5 make template`.
+
 Then run `prosv5 c fetch <template>` to import the package into PROS.
 Finally, run `prosv5 c apply odomDebug --force-apply` in your destination project.
 ### Using as a standalone project
