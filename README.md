@@ -7,10 +7,16 @@ To build, clone the repository and run `prosv5 make template`.
 Then run `prosv5 c fetch <template>` to import the package into PROS.
 
 Finally, run `prosv5 c apply odomDebug --force-apply` in your destination project.
+
+You can now use odomDebug in your existing project.
+
 ### Use as Standalone Project
 Build by running `prosv5 make`.
 
 `src/opcontrol.cpp` contains an example program.
+
+You can upload and test straight from here.
+
 ## Use
 Include the header into your file:
 `#include "odomDebug/odomDebug.hpp"`
