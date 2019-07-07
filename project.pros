@@ -1,7 +1,7 @@
 {
     "py/object": "pros.conductor.project.Project",
     "py/state": {
-        "project_name": "okapiTesting",
+        "project_name": "odomDebug",
         "target": "v5",
         "templates": {
             "kernel": {
