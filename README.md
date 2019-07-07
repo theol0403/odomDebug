@@ -1,5 +1,6 @@
 # OdomDebug
 Display the robot on a VEX field using information from Okapilib odometry and LVGL.
+<img src="https://github.com/theol0403/odomDebug/raw/master/odomDebug.png" align="center">
 ## Instalation
 ### Building for External Project
 To build, clone the repository and run `prosv5 make template`.
