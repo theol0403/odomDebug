@@ -183,8 +183,8 @@ void OdomDebug::run() {
 
   while(true) {
 
-    double x = tracker->getState(StateMode::CARTESIAN).y.convert(court);
-    double y = (1_crt - tracker->getState(StateMode::CARTESIAN).x).convert(court);
+    double x = tracker->getState(StateMode::CARTESIAN).x.convert(court);
+    double y = (1_crt - tracker->getState(StateMode::CARTESIAN).y).convert(court);
     double theta = tracker->getState(StateMode::CARTESIAN).theta.convert(radian);
 
     lv_obj_set_pos(led, (x * fieldDim) - lv_obj_get_width(led)/2, (y * fieldDim) - lv_obj_get_height(led)/2 - 1);
