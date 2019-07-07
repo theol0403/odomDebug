@@ -9,6 +9,8 @@
 
 #include "okapi/api/chassis/controller/chassisControllerIntegrated.hpp"
 #include "okapi/api/chassis/controller/chassisControllerPid.hpp"
+#include "okapi/api/chassis/controller/odomChassisControllerIntegrated.hpp"
+#include "okapi/api/chassis/controller/odomChassisControllerPid.hpp"
 #include "okapi/api/chassis/model/skidSteerModel.hpp"
 #include "okapi/api/chassis/model/xDriveModel.hpp"
 #include "okapi/api/util/logging.hpp"
@@ -188,6 +190,31 @@ class ChassisControllerBuilder {
                                       const IterativePosPIDController::Gains &iangleGains);
 
   /**
+   * Sets the odometry information, causing the builder to generate an Odometry variant.
+   *
+   * @param imoveThreshold The minimum length movement.
+   * @param iturnThreshold The minimum angle turn.
+   * @param iwheelVelDelta The maximum delta between wheel velocities to consider the robot as
+   * driving straight.
+   * @return An ongoing builder.
+   */
+  ChassisControllerBuilder &withOdometry(const QLength &imoveThreshold = 10_mm,
+                                         const QAngle &iturnThreshold = 1_deg,
+                                         const QSpeed &iwheelVelDelta = 0.0001_mps);
+
+  /**
+   * Sets the odometry information, causing the builder to generate an Odometry variant.
+   *
+   * @param iodometry The odometry object.
+   * @param imoveThreshold The minimum length movement.
+   * @param iturnThreshold The minimum angle turn.
+   * @return An ongoing builder.
+   */
+  ChassisControllerBuilder &withOdometry(std::unique_ptr<Odometry> iodometry,
+                                         const QLength &imoveThreshold = 10_mm,
+                                         const QAngle &iturnThreshold = 1_deg);
+
+  /**
    * Sets the derivative filters. Uses a PassthroughFilter by default.
    *
    * @param idistanceFilter The distance controller's filter.
@@ -199,14 +226,6 @@ class ChassisControllerBuilder {
     std::unique_ptr<Filter> idistanceFilter,
     std::unique_ptr<Filter> iturnFilter = std::make_unique<PassthroughFilter>(),
     std::unique_ptr<Filter> iangleFilter = std::make_unique<PassthroughFilter>());
-
-  /**
-   * Sets the TimeUtil for each controller.
-   *
-   * @param itimeUtil The TimeUtil.
-   * @return An ongoing builder.
-   */
-  ChassisControllerBuilder &withTimeUtil(const TimeUtil &itimeUtil);
 
   /**
    * Sets the gearset. The default gearset is derived from the motor's.
@@ -241,7 +260,36 @@ class ChassisControllerBuilder {
   ChassisControllerBuilder &withMaxVoltage(double imaxVoltage);
 
   /**
-   * Sets the logger.
+   * Sets the TimeUtilFactory used when building a ChassisController. The default is the static
+   * TimeUtilFactory.
+   *
+   * @param itimeUtilFactory The TimeUtilFactory.
+   * @return An ongoing builder.
+   */
+  ChassisControllerBuilder &
+  withChassisControllerTimeUtilFactory(const TimeUtilFactory &itimeUtilFactory);
+
+  /**
+   * Sets the TimeUtilFactory used when building a ClosedLoopController. The default is the static
+   * TimeUtilFactory.
+   *
+   * @param itimeUtilFactory The TimeUtilFactory.
+   * @return An ongoing builder.
+   */
+  ChassisControllerBuilder &
+  withClosedLoopControllerTimeUtilFactory(const TimeUtilFactory &itimeUtilFactory);
+
+  /**
+   * Sets the TimeUtilFactory used when building an Odometry. The default is the static
+   * TimeUtilFactory.
+   *
+   * @param itimeUtilFactory The TimeUtilFactory.
+   * @return An ongoing builder.
+   */
+  ChassisControllerBuilder &withOdometryTimeUtilFactory(const TimeUtilFactory &itimeUtilFactory);
+
+  /**
+   * Sets the logger used for the ChassisController and ClosedLoopControllers.
    *
    * @param ilogger The logger.
    * @return An ongoing builder.
@@ -254,6 +302,14 @@ class ChassisControllerBuilder {
    * @return A fully built ChassisController.
    */
   std::shared_ptr<ChassisController> build();
+
+  /**
+   * Builds the OdomChassisController. Throws a std::runtime_exception if no motors were set or if
+   * no odometry information was passed.
+   *
+   * @return A fully built OdomChassisController.
+   */
+  std::shared_ptr<OdomChassisController> buildOdometry();
 
   private:
   std::shared_ptr<Logger> logger;
@@ -287,12 +343,20 @@ class ChassisControllerBuilder {
   std::unique_ptr<Filter> angleFilter = std::make_unique<PassthroughFilter>();
   IterativePosPIDController::Gains turnGains;
   std::unique_ptr<Filter> turnFilter = std::make_unique<PassthroughFilter>();
-  TimeUtil timeUtil = TimeUtilFactory::create();
+  TimeUtilFactory chassisControllerTimeUtilFactory = TimeUtilFactory();
+  TimeUtilFactory closedLoopControllerTimeUtilFactory = TimeUtilFactory();
+  TimeUtilFactory odometryTimeUtilFactory = TimeUtilFactory();
 
   bool gearsetSetByUser{false}; // Used so motors don't overwrite gearset set manually
   AbstractMotor::GearsetRatioPair gearset{AbstractMotor::gearset::invalid};
   ChassisScales scales{{1, 1}, imev5GreenTPR};
   std::shared_ptr<Logger> controllerLogger = std::make_shared<Logger>();
+
+  bool hasOdom{false}; // Whether odometry was passed
+  std::unique_ptr<Odometry> odometry;
+  QSpeed wheelVelDelta;
+  QLength moveThreshold;
+  QAngle turnThreshold;
 
   bool maxVelSetByUser{false}; // Used so motors don't overwrite maxVelocity
   double maxVelocity{600};
@@ -301,6 +365,8 @@ class ChassisControllerBuilder {
 
   std::shared_ptr<ChassisControllerPID> buildCCPID();
   std::shared_ptr<ChassisControllerIntegrated> buildCCI();
+  std::shared_ptr<OdomChassisControllerPID> buildOCCPID();
+  std::shared_ptr<OdomChassisControllerIntegrated> buildOCCI();
   std::shared_ptr<SkidSteerModel> makeSkidSteerModel();
   std::shared_ptr<XDriveModel> makeXDriveModel();
 };

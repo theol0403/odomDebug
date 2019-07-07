@@ -1,4 +1,5 @@
 #include "main.h"
+#include "odomDebug/odomDebug.hpp"
 
 /**
 * Runs the operator control code. This function will be started in its own task
@@ -16,10 +17,17 @@
 void opcontrol() {
 
  auto chassis = ChassisControllerBuilder()
- .withMotors(-18, 19)
- .withDimensions({{4_in, 11.5_in}, imev5GreenTPR})
- .withMaxVelocity(1)
- .build();
- chassis->moveDistance(1_in);
+ .withMotors(1, -2)
+ .withDimensions({{4_in, 11_in}, imev5RedTPR})
+ .withMaxVelocity(50)
+ .withOdometry()
+ .buildOdometry();
+
+ OdomDebug display(lv_scr_act(), LV_COLOR_ORANGE, chassis);
+
+ // chassis->moveDistance(1_ft);
+ // chassis->turnAngle(4.0/11.0 * 360.0 * degree);
+ //arcade code goes here
+ pros::delay(40000000);
 
 }
