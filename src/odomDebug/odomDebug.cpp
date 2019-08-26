@@ -1,10 +1,10 @@
 #include "odomDebug.hpp"
 
-OdomDebug::OdomDebug(lv_obj_t* parent, std::shared_ptr<OdomChassisController> tracker) 
-: OdomDebug(parent, lv_obj_get_style(parent)->body.main_color, tracker) {}
+OdomDebug::OdomDebug(lv_obj_t* parent) 
+: OdomDebug(parent, lv_obj_get_style(parent)->body.main_color) {}
 
-OdomDebug::OdomDebug(lv_obj_t* parent, lv_color_t mainColor, std::shared_ptr<OdomChassisController> itracker) 
-: container(lv_obj_create(parent, NULL)), tracker(itracker), task(taskFnc, this)
+OdomDebug::OdomDebug(lv_obj_t* parent, lv_color_t mainColor) 
+: container(lv_obj_create(parent, NULL))
 {
   lv_obj_set_size(container, lv_obj_get_width(parent), lv_obj_get_height(parent));
   lv_obj_align(container, NULL, LV_ALIGN_CENTER, 0, 0);

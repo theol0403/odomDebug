@@ -6,19 +6,16 @@ class OdomDebug {
 public:
 
   lv_obj_t* container = nullptr; // lvgl parent container
-  std::shared_ptr<OdomChassisController> tracker = nullptr;
 
   lv_obj_t* field = nullptr; // lvgl field container
   double fieldDim = 0; // width/height of field container
-
-  pros::Task task; // task to update the odometry
 
   /**
    * @brief  Constructs the OdomDebug object.
    * @param  parent   The lvgl parent, inherits color
    * @param  tracker  The okapi OdomChassisController
    */
-  OdomDebug(lv_obj_t* parent, std::shared_ptr<OdomChassisController> tracker);
+  OdomDebug(lv_obj_t* parent);
 
   /**
    * @brief  Constructs the OdomDebug object.
@@ -26,15 +23,13 @@ public:
    * @param  mainColor  The main color for the display
    * @param  tracker    The okapi OdomChassisController
    */
-  OdomDebug(lv_obj_t* pqarent, lv_color_t mainColor, std::shared_ptr<OdomChassisController> tracker);
+  OdomDebug(lv_obj_t* pqarent, lv_color_t mainColor);
 
   ~OdomDebug();
 
   static lv_res_t tileAction(lv_obj_t*); // action when tile is pressed
   static lv_res_t resetAction(lv_obj_t*); // action when reset button is pressed
-
-  void run(); // main processing loop
-  static void taskFnc(void*);
+  
 };
 
 /**
