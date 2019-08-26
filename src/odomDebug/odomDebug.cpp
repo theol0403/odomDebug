@@ -3,12 +3,15 @@
 OdomDebug::OdomDebug(lv_obj_t* parent, std::shared_ptr<OdomChassisController> tracker) 
 : OdomDebug(parent, lv_obj_get_style(parent)->body.main_color, tracker) {}
 
-OdomDebug::OdomDebug(lv_obj_t* parent, lv_color_t mainColor, std::shared_ptr<OdomChassisController> itracker) :
-container(lv_obj_create(parent, NULL)), tracker(itracker), task(taskFnc, this)
+OdomDebug::OdomDebug(lv_obj_t* parent, lv_color_t mainColor, std::shared_ptr<OdomChassisController> itracker) 
+: container(lv_obj_create(parent, NULL)), tracker(itracker), task(taskFnc, this)
 {
   lv_obj_set_size(container, lv_obj_get_width(parent), lv_obj_get_height(parent));
   lv_obj_align(container, NULL, LV_ALIGN_CENTER, 0, 0);
 
+  /**
+   * Container Style
+   */
   lv_style_t* cStyle = new lv_style_t;
   lv_style_copy(cStyle, &lv_style_plain_color);
   cStyle->body.main_color = mainColor;
@@ -26,12 +29,18 @@ container(lv_obj_create(parent, NULL)), tracker(itracker), task(taskFnc, this)
     lv_obj_set_size(field, fieldDim, fieldDim);
     lv_obj_align(field, NULL, LV_ALIGN_IN_RIGHT_MID, 0, 0);
 
+    /**
+     * Field Style
+     */
     lv_style_t* fStyle = new lv_style_t;
     lv_style_copy(fStyle, cStyle);
     fStyle->body.main_color = LV_COLOR_WHITE;
     fStyle->body.grad_color = LV_COLOR_WHITE;
     lv_obj_set_style(field, fStyle);
 
+    /**
+     * Tile Styles
+     */
     lv_style_t* grey = new lv_style_t;
     lv_style_t* red = new lv_style_t;
     lv_style_t* blue = new lv_style_t;
@@ -48,6 +57,9 @@ container(lv_obj_create(parent, NULL)), tracker(itracker), task(taskFnc, this)
     blue->body.main_color = LV_COLOR_HEX(0x0077C9);
     blue->body.grad_color = LV_COLOR_HEX(0x0077C9);
 
+    /**
+     * Tile Layout
+     */
     std::vector<std::vector<lv_style_t*>> data = {
       {grey, grey, grey, grey, grey, grey},
       {grey, grey, grey, grey, grey, grey},
@@ -59,6 +71,9 @@ container(lv_obj_create(parent, NULL)), tracker(itracker), task(taskFnc, this)
 
     double tileDim = fieldDim / data.size();
 
+    /**
+     * Create tile matrix, register callbacks, assign each tile an ID
+     */
     for(double y = 0; y < 6; y++) {
       for(double x = 0; x < 6; x++) {
         lv_obj_t* tileObj = lv_btn_create(field, NULL);
@@ -84,6 +99,9 @@ container(lv_obj_create(parent, NULL)), tracker(itracker), task(taskFnc, this)
     lv_obj_set_free_ptr(btn, this);
     lv_btn_set_action(btn, LV_BTN_ACTION_PR, resetAction);
 
+    /**
+     * Button Style
+     */
     lv_style_t* btnm_rel = new lv_style_t;
     lv_style_copy(btnm_rel, &lv_style_btn_tgl_rel);
     btnm_rel->body.main_color = mainColor;
@@ -115,7 +133,6 @@ container(lv_obj_create(parent, NULL)), tracker(itracker), task(taskFnc, this)
     lv_label_set_text(label, "Reset");
   }
 
-
 }
 
 OdomDebug::~OdomDebug() {
@@ -123,6 +140,10 @@ OdomDebug::~OdomDebug() {
 }
 
 
+/**
+ * Sets odom state when tile is pressed
+ * Decodes tile ID to find position
+ */
 lv_res_t OdomDebug::tileAction(lv_obj_t* tileObj) {
   OdomDebug* that = static_cast<OdomDebug*>(lv_obj_get_free_ptr(tileObj));
   int num = lv_obj_get_free_num(tileObj);
@@ -132,7 +153,9 @@ lv_res_t OdomDebug::tileAction(lv_obj_t* tileObj) {
   return LV_RES_OK;
 }
 
-
+/**
+ * Reset Sensors and Position
+ */
 lv_res_t OdomDebug::resetAction(lv_obj_t* btn) {
   OdomDebug* that = static_cast<OdomDebug*>(lv_obj_get_free_ptr(btn));
   that->tracker->resetSensors();
@@ -140,10 +163,17 @@ lv_res_t OdomDebug::resetAction(lv_obj_t* btn) {
   return LV_RES_OK;
 }
 
+
+/**
+ * Main Processing Loop
+ */
 void OdomDebug::run() {
 
   lv_color_t mainColor = lv_obj_get_style(container)->body.main_color;
 
+  /**
+   * Create robot point using lvgl led
+   */
   lv_obj_t* led = lv_led_create(field, NULL);
   lv_led_on(led);
   lv_obj_set_size(led, fieldDim / 15, fieldDim / 15);
@@ -158,6 +188,9 @@ void OdomDebug::run() {
   ledStyle.body.border.opa = LV_OPA_100;
   lv_obj_set_style(led, &ledStyle);
 
+  /**
+   * Create robot line
+   */
   std::vector<lv_point_t> points = {{0, 0}, {0, 0}};
 
   lv_obj_t* arrow = lv_line_create(field, NULL);
@@ -174,6 +207,9 @@ void OdomDebug::run() {
 
   int arrowHeight = fieldDim / 6;
 
+  /**
+   * Status Label
+   */
   lv_obj_t* label = lv_label_create(container, NULL);
   lv_style_t textStyle;
   lv_style_copy(&textStyle, &lv_style_plain);
@@ -183,12 +219,15 @@ void OdomDebug::run() {
 
   while(true) {
 
+    // get robot position
     double x = tracker->getState(StateMode::CARTESIAN).x.convert(court);
     double y = (1_crt - tracker->getState(StateMode::CARTESIAN).y).convert(court);
     double theta = tracker->getState(StateMode::CARTESIAN).theta.convert(radian);
 
+    // place point on field
     lv_obj_set_pos(led, (x * fieldDim) - lv_obj_get_width(led)/2, (y * fieldDim) - lv_obj_get_height(led)/2 - 1);
 
+    // move start and end of line
     points[0] = {(int16_t)((x * fieldDim)), (int16_t)((y * fieldDim) - (lineWidth/2))};
     double newY = arrowHeight * cos(theta);
     double newX = arrowHeight * sin(theta);
@@ -197,6 +236,7 @@ void OdomDebug::run() {
     lv_line_set_points(arrow, points.data(), points.size());
     lv_obj_invalidate(arrow);
 
+    // assign labels
     std::string text =
     "X: " + std::to_string(tracker->getState(StateMode::CARTESIAN).x.convert(foot)) + "\n" +
     "Y: " + std::to_string(tracker->getState(StateMode::CARTESIAN).y.convert(foot)) + "\n" +

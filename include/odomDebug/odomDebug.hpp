@@ -5,27 +5,42 @@ class OdomDebug {
 
 public:
 
-  lv_obj_t* container = nullptr;
+  lv_obj_t* container = nullptr; // lvgl parent container
   std::shared_ptr<OdomChassisController> tracker = nullptr;
 
-  lv_obj_t* field = nullptr;
-  double fieldDim = 0;
+  lv_obj_t* field = nullptr; // lvgl field container
+  double fieldDim = 0; // width/height of field container
 
-  pros::Task task;
+  pros::Task task; // task to update the odometry
 
-  OdomDebug(lv_obj_t*, std::shared_ptr<OdomChassisController>);
-  OdomDebug(lv_obj_t*, lv_color_t, std::shared_ptr<OdomChassisController>);
+  /**
+   * @brief  Constructs the OdomDebug object.
+   * @param  parent   The lvgl parent, inherits color
+   * @param  tracker  The okapi OdomChassisController
+   */
+  OdomDebug(lv_obj_t* parent, std::shared_ptr<OdomChassisController> tracker);
+
+  /**
+   * @brief  Constructs the OdomDebug object.
+   * @param  parent    The lvgl parent
+   * @param  mainColor  The main color for the display
+   * @param  tracker    The okapi OdomChassisController
+   */
+  OdomDebug(lv_obj_t* pqarent, lv_color_t mainColor, std::shared_ptr<OdomChassisController> tracker);
+
   ~OdomDebug();
 
-  static lv_res_t tileAction(lv_obj_t*);
-  static lv_res_t resetAction(lv_obj_t*);
-  static lv_res_t btnmAction(lv_obj_t*);
+  static lv_res_t tileAction(lv_obj_t*); // action when tile is pressed
+  static lv_res_t resetAction(lv_obj_t*); // action when reset button is pressed
 
-  void run();
+  void run(); // main processing loop
   static void taskFnc(void*);
-
 };
 
+/**
+ * Okapi units that represent a tile (2ft) and a court(12ft)
+ * Literals are `_tl` and `_crt`, respectivly
+ */
 namespace okapi {
   constexpr QLength tile = 2 * foot;
   constexpr QLength court = 12 * foot;
