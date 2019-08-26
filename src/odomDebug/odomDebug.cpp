@@ -12,13 +12,12 @@ OdomDebug::OdomDebug(lv_obj_t* parent, lv_color_t mainColor)
   /**
    * Container Style
    */
-  lv_style_t* cStyle = new lv_style_t;
-  lv_style_copy(cStyle, &lv_style_plain_color);
-  cStyle->body.main_color = mainColor;
-  cStyle->body.grad_color = mainColor;
-  cStyle->body.border.width = 0;
-  cStyle->body.radius = 0;
-  lv_obj_set_style(container, cStyle);
+  lv_style_copy(&cStyle, &lv_style_plain_color);
+  cStyle.body.main_color = mainColor;
+  cStyle.body.grad_color = mainColor;
+  cStyle.body.border.width = 0;
+  cStyle.body.radius = 0;
+  lv_obj_set_style(container, &cStyle);
 
   /**
   * Field
@@ -32,44 +31,40 @@ OdomDebug::OdomDebug(lv_obj_t* parent, lv_color_t mainColor)
     /**
      * Field Style
      */
-    lv_style_t* fStyle = new lv_style_t;
-    lv_style_copy(fStyle, cStyle);
-    fStyle->body.main_color = LV_COLOR_WHITE;
-    fStyle->body.grad_color = LV_COLOR_WHITE;
-    lv_obj_set_style(field, fStyle);
+    lv_style_copy(&fStyle, &cStyle);
+    fStyle.body.main_color = LV_COLOR_WHITE;
+    fStyle.body.grad_color = LV_COLOR_WHITE;
+    lv_obj_set_style(field, &fStyle);
 
     /**
      * Tile Styles
      */
-    lv_style_t* grey = new lv_style_t;
-    lv_style_t* red = new lv_style_t;
-    lv_style_t* blue = new lv_style_t;
-    lv_style_copy(grey, &lv_style_plain);
-    grey->body.main_color = LV_COLOR_HEX(0x828F8F);
-    grey->body.grad_color = LV_COLOR_HEX(0x828F8F);
-    grey->body.border.width = 1;
-    grey->body.radius = 0;
-    grey->body.border.color = LV_COLOR_WHITE;
-    lv_style_copy(red, grey);
-    red->body.main_color = LV_COLOR_HEX(0xD42630);
-    red->body.grad_color = LV_COLOR_HEX(0xD42630);
-    lv_style_copy(blue, grey);
-    blue->body.main_color = LV_COLOR_HEX(0x0077C9);
-    blue->body.grad_color = LV_COLOR_HEX(0x0077C9);
+    lv_style_copy(&grey, &lv_style_plain);
+    grey.body.main_color = LV_COLOR_HEX(0x828F8F);
+    grey.body.grad_color = LV_COLOR_HEX(0x828F8F);
+    grey.body.border.width = 1;
+    grey.body.radius = 0;
+    grey.body.border.color = LV_COLOR_WHITE;
+    lv_style_copy(&red, &grey);
+    red.body.main_color = LV_COLOR_HEX(0xD42630);
+    red.body.grad_color = LV_COLOR_HEX(0xD42630);
+    lv_style_copy(&blue, &grey);
+    blue.body.main_color = LV_COLOR_HEX(0x0077C9);
+    blue.body.grad_color = LV_COLOR_HEX(0x0077C9);
 
     /**
      * Tile Layout
      */
     std::vector<std::vector<lv_style_t*>> data = {
-      {grey, grey, grey, grey, grey, grey},
-      {grey, grey, grey, grey, grey, grey},
-      {red , grey, grey, grey, grey, blue},
-      {grey, grey, grey, grey, grey, grey},
-      {red , grey, grey, grey, grey, blue},
-      {grey, grey, grey, grey, grey, grey}
+      {&grey, &grey, &grey, &grey, &grey, &grey},
+      {&grey, &grey, &grey, &grey, &grey, &grey},
+      {&red , &grey, &grey, &grey, &grey, &blue},
+      {&grey, &grey, &grey, &grey, &grey, &grey},
+      {&red , &grey, &grey, &grey, &grey, &blue},
+      {&grey, &grey, &grey, &grey, &grey, &grey}
     };
 
-    double tileDim = fieldDim / data.size();
+    double tileDim = fieldDim / data.size(); // tile dimention
 
     /**
      * Create tile matrix, register callbacks, assign each tile an ID
