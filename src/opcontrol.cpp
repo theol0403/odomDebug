@@ -23,12 +23,18 @@ void opcontrol() {
  .withOdometry()
  .buildOdometry();
 
+ Controller controller;
+
  OdomDebug display(lv_scr_act(), LV_COLOR_ORANGE, chassis);
 
  // chassis->moveDistance(1_ft);
  // chassis->turnAngle(90_deg);
 
  //arcade code goes here
+ while(true) {
+ 	chassis->arcade(controller.getAnalog(ControllerAnalog::rightY), controller.getAnalog(ControllerAnalog::leftX));
+ 	pros::delay(20);
+ }
 
  pros::delay(40000000); //don't go out of scope
 
