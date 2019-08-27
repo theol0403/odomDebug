@@ -273,21 +273,20 @@ void OdomDebug::setRobotData(double x, double y, double theta, double left, doub
  * Decodes tile ID to find position
  */
 lv_res_t OdomDebug::tileAction(lv_obj_t* tileObj) {
-  // OdomDebug* that = static_cast<OdomDebug*>(lv_obj_get_free_ptr(tileObj));
-  // int num = lv_obj_get_free_num(tileObj);
-  // int y = num / 6;
-  // int x = num - y * 6;
-  // that->tracker->setState({x * tile + 0.5_tl, 1_crt - y * tile - 0.5_tl, 0_deg}, StateMode::CARTESIAN);
-  // return LV_RES_OK;
+  OdomDebug* that = static_cast<OdomDebug*>(lv_obj_get_free_ptr(tileObj));
+  int num = lv_obj_get_free_num(tileObj);
+  int y = num / 6;
+  int x = num - y * 6;
+  that->stateCallback(x * tile + 0.5_tl, 1_crt - y * tile - 0.5_tl, 0_deg);
+  return LV_RES_OK;
 }
 
 /**
  * Reset Sensors and Position
  */
 lv_res_t OdomDebug::resetAction(lv_obj_t* btn) {
-  // OdomDebug* that = static_cast<OdomDebug*>(lv_obj_get_free_ptr(btn));
-  // that->tracker->resetSensors();
-  // that->tracker->setState({0_in, 0_in});
-  // return LV_RES_OK;
+  OdomDebug* that = static_cast<OdomDebug*>(lv_obj_get_free_ptr(btn));
+  that->resetCallback();
+  return LV_RES_OK;
 }
 
