@@ -28,7 +28,7 @@ void opcontrol() {
     // the last `middle` paramiter is optional, depending on your robot
     // display.setData(x, y, theta, left, right, middle);
     
-    display.setData(0, 0, 0, 0, 0, 0);
+    // display.setData(0, 0, 0, 0, 0, 0);
 
     pros::delay(20);
   }
