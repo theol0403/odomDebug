@@ -88,11 +88,11 @@ OdomDebug::OdomDebug(lv_obj_t* parent, lv_color_t mainColor)
    * Tile Layout
    */
   std::vector<std::vector<lv_style_t*>> tileData = {
-    {&grey, &grey, &grey, &grey, &grey, &grey},
-    {&grey, &grey, &grey, &grey, &grey, &grey},
+    {&grey, &red , &grey, &grey, &blue, &grey},
     {&red , &grey, &grey, &grey, &grey, &blue},
     {&grey, &grey, &grey, &grey, &grey, &grey},
-    {&red , &grey, &grey, &grey, &grey, &blue},
+    {&grey, &grey, &grey, &grey, &grey, &grey},
+    {&grey, &grey, &grey, &grey, &grey, &grey},
     {&grey, &grey, &grey, &grey, &grey, &grey}
   };
 
@@ -101,8 +101,8 @@ OdomDebug::OdomDebug(lv_obj_t* parent, lv_color_t mainColor)
   /**
    * Create tile matrix, register callbacks, assign each tile an ID
    */
-  for(double y = 0; y < 6; y++) {
-    for(double x = 0; x < 6; x++) {
+  for(size_t y = 0; y < 6; y++) {
+    for(size_t x = 0; x < 6; x++) {
       lv_obj_t* tileObj = lv_btn_create(field, NULL);
       lv_obj_set_pos(tileObj, x * tileDim, y * tileDim);
       lv_obj_set_size(tileObj, tileDim, tileDim);
@@ -206,16 +206,16 @@ OdomDebug::~OdomDebug() {
  * Sets the function to be called when a tile is pressed
  * @param callback a function that sets the odometry state
  */
-void OdomDebug::setStateCallback(std::function<void(QLength x, QLength y, QAngle theta)> callback) {
-  stateCallback = callback;
+void OdomDebug::stateCallback(std::function<void(QLength x, QLength y, QAngle theta)> callback) {
+  stateFnc = callback;
 }
 
 /**
  * Sets the function to be called when the reset button is pressed
  * @param callback a function that resets the odometry and sensors
  */
-void OdomDebug::setResetCallback(std::function<void()> callback) {
-  resetCallback = callback;
+void OdomDebug::resetCallback(std::function<void()> callback) {
+  resetFnc = callback;
 }
 
 /**
@@ -227,7 +227,7 @@ void OdomDebug::setResetCallback(std::function<void()> callback) {
  * @param right  the right encoder value
  * @param middle the middle encoder value
  */
-void OdomDebug::setRobotData(QLength x, QLength y, QAngle theta, double left, double right, double middle) {
+void OdomDebug::setData(QLength x, QLength y, QAngle theta, double left, double right, double middle) {
   double cx = x.convert(court);
   double cy = (1_crt - y).convert(court);
   double ctheta = theta.convert(radian);
@@ -264,8 +264,8 @@ void OdomDebug::setRobotData(QLength x, QLength y, QAngle theta, double left, do
  * @param right  the right encoder value
  * @param middle the middle encoder value
  */
-void OdomDebug::setRobotData(double x, double y, double theta, double left, double right, double middle) {
-  setRobotData(x * inch, y * inch, theta * radian, left, right, middle);
+void OdomDebug::setData(double x, double y, double theta, double left, double right, double middle) {
+  setData(x * inch, y * inch, theta * radian, left, right, middle);
 }
 
 /**
@@ -277,7 +277,8 @@ lv_res_t OdomDebug::tileAction(lv_obj_t* tileObj) {
   int num = lv_obj_get_free_num(tileObj);
   int y = num / 6;
   int x = num - y * 6;
-  that->stateCallback(x * tile + 0.5_tl, 1_crt - y * tile - 0.5_tl, 0_deg);
+  if(that->stateFnc) that->stateFnc(x * tile + 0.5_tl, 1_crt - y * tile - 0.5_tl, 0_deg);
+  else std::cout << "OdomDebug: No tile action callback provided";
   return LV_RES_OK;
 }
 
@@ -286,7 +287,8 @@ lv_res_t OdomDebug::tileAction(lv_obj_t* tileObj) {
  */
 lv_res_t OdomDebug::resetAction(lv_obj_t* btn) {
   OdomDebug* that = static_cast<OdomDebug*>(lv_obj_get_free_ptr(btn));
-  that->resetCallback();
+  if(that->resetFnc) that->resetFnc();
+  else std::cout << "OdomDebug: No reset action callback provided";
   return LV_RES_OK;
 }
 
