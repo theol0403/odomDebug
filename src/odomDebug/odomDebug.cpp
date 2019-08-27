@@ -1,6 +1,29 @@
 #include "odomDebug.hpp"
 
 /**
+ * Okapi units that represent a tile (2ft) and a court(12ft)
+ * Literals are `_tl` and `_crt`, respectivly
+ */
+namespace okapi {
+  constexpr QLength tile = 2 * foot;
+  constexpr QLength court = 12 * foot;
+  inline namespace literals {
+    constexpr QLength operator"" _tl(long double x) {
+      return static_cast<double>(x) * tile;
+    }
+    constexpr QLength operator"" _crt(long double x) {
+      return static_cast<double>(x) * court;
+    }
+    constexpr QLength operator"" _tl(unsigned long long int x) {
+      return static_cast<double>(x) * tile;
+    }
+    constexpr QLength operator"" _crt(unsigned long long int x) {
+      return static_cast<double>(x) * court;
+    }
+  }
+}
+
+/**
  * Constructs the OdomDebug object.
  * @param parent the lvgl parent, color is inherited
  */
@@ -95,7 +118,6 @@ OdomDebug::OdomDebug(lv_obj_t* parent, lv_color_t mainColor)
   /**
    * Robot point using lvgl led
    */
-  
   led = lv_led_create(field, NULL);
   lv_led_on(led);
   lv_obj_set_size(led, fieldDim / 15, fieldDim / 15);
@@ -117,15 +139,15 @@ OdomDebug::OdomDebug(lv_obj_t* parent, lv_color_t mainColor)
   lv_line_set_points(line, linePoints.data(), linePoints.size());
   lv_obj_set_pos(line, 0, 0);
 
+  lineWidth = 3;
+  lineLength = fieldDim / 6;
+
   lv_style_copy(&lineStyle, &lv_style_plain);
   lineStyle.line.width = 3;
   lineStyle.line.opa = LV_OPA_100;
   lineStyle.line.color = mainColor;
   lv_obj_set_style(line, &lineStyle);
-
-  lineLength = fieldDim / 6;
   
-
   /**
    * Status Label
    */
@@ -134,7 +156,6 @@ OdomDebug::OdomDebug(lv_obj_t* parent, lv_color_t mainColor)
   textStyle.text.color = LV_COLOR_WHITE;
   textStyle.text.opa = LV_OPA_100;
   lv_obj_set_style(statusLabel, &textStyle);
-
 
   /**
   * Reset Button
@@ -203,8 +224,22 @@ void OdomDebug::setResetCallback(std::function<void()> callback) {
  * @param y     
  * @param theta 
  */
-void OdomDebug::setPosition(QLength x, QLength y, QAngle theta) {
+void OdomDebug::setPosition(QLength ix, QLength iy, QAngle itheta) {
+  double x = ix.convert(court);
+  double y = (1_crt - iy).convert(court);
+  double theta = itheta.convert(radian);
 
+  // place point on field
+  lv_obj_set_pos(led, (x * fieldDim) - lv_obj_get_width(led)/2, (y * fieldDim) - lv_obj_get_height(led)/2 - 1);
+
+  // move start and end of line
+  linePoints[0] = {(int16_t)((x * fieldDim)), (int16_t)((y * fieldDim) - (lineWidth/2))};
+  double newY = lineLength * cos(theta);
+  double newX = lineLength * sin(theta);
+  linePoints[1] = {(int16_t)(newX + linePoints[0].x), (int16_t)(-newY + linePoints[0].y)};
+
+  lv_line_set_points(line, linePoints.data(), linePoints.size());
+  lv_obj_invalidate(line);
 }
 
 /**
@@ -213,8 +248,8 @@ void OdomDebug::setPosition(QLength x, QLength y, QAngle theta) {
  * @param y     inches
  * @param theta radians
  */
-void OdomDebug::setPosition(double x, double y, double theta) {
-
+void OdomDebug::setPosition(double ix, double iy, double itheta) {
+  setPosition(ix * inch, iy * inch, itheta * radian);
 }
 
 /**
@@ -241,70 +276,56 @@ void OdomDebug::setSensorValues(double left, double right, double middle) {
  * Decodes tile ID to find position
  */
 lv_res_t OdomDebug::tileAction(lv_obj_t* tileObj) {
-  OdomDebug* that = static_cast<OdomDebug*>(lv_obj_get_free_ptr(tileObj));
-  int num = lv_obj_get_free_num(tileObj);
-  int y = num / 6;
-  int x = num - y * 6;
-  that->tracker->setState({x * tile + 0.5_tl, 1_crt - y * tile - 0.5_tl, 0_deg}, StateMode::CARTESIAN);
-  return LV_RES_OK;
+  // OdomDebug* that = static_cast<OdomDebug*>(lv_obj_get_free_ptr(tileObj));
+  // int num = lv_obj_get_free_num(tileObj);
+  // int y = num / 6;
+  // int x = num - y * 6;
+  // that->tracker->setState({x * tile + 0.5_tl, 1_crt - y * tile - 0.5_tl, 0_deg}, StateMode::CARTESIAN);
+  // return LV_RES_OK;
 }
 
 /**
  * Reset Sensors and Position
  */
 lv_res_t OdomDebug::resetAction(lv_obj_t* btn) {
-  OdomDebug* that = static_cast<OdomDebug*>(lv_obj_get_free_ptr(btn));
-  that->tracker->resetSensors();
-  that->tracker->setState({0_in, 0_in});
-  return LV_RES_OK;
+  // OdomDebug* that = static_cast<OdomDebug*>(lv_obj_get_free_ptr(btn));
+  // that->tracker->resetSensors();
+  // that->tracker->setState({0_in, 0_in});
+  // return LV_RES_OK;
 }
 
 
 /**
  * Main Processing Loop
  */
-void OdomDebug::run() {
+// void OdomDebug::run() {
 
 
 
 
-  while(true) {
+//   while(true) {
 
-    // get robot position
-    double x = tracker->getState(StateMode::CARTESIAN).x.convert(court);
-    double y = (1_crt - tracker->getState(StateMode::CARTESIAN).y).convert(court);
-    double theta = tracker->getState(StateMode::CARTESIAN).theta.convert(radian);
-
-    // place point on field
-    lv_obj_set_pos(led, (x * fieldDim) - lv_obj_get_width(led)/2, (y * fieldDim) - lv_obj_get_height(led)/2 - 1);
-
-    // move start and end of line
-    points[0] = {(int16_t)((x * fieldDim)), (int16_t)((y * fieldDim) - (lineWidth/2))};
-    double newY = lineLength * cos(theta);
-    double newX = lineLength * sin(theta);
-    points[1] = {(int16_t)(newX + points[0].x), (int16_t)(-newY + points[0].y)};
-
-    lv_line_set_points(line, points.tileData(), points.size());
-    lv_obj_invalidate(line);
-
-    // assign labels
-    std::string text =
-    "X: " + std::to_string(tracker->getState(StateMode::CARTESIAN).x.convert(foot)) + "\n" +
-    "Y: " + std::to_string(tracker->getState(StateMode::CARTESIAN).y.convert(foot)) + "\n" +
-    "Theta: " + std::to_string(tracker->getState(StateMode::CARTESIAN).theta.convert(degree)) + "\n" +
-    "Left: " + std::to_string(tracker->getSensorVals()[0]) + "\n" +
-    "Right: " + std::to_string(tracker->getSensorVals()[1]);
-    lv_label_set_text(label, text.c_str());
-    lv_obj_align(label, container, LV_ALIGN_CENTER, -lv_obj_get_width(container)/2 + (lv_obj_get_width(container) - fieldDim)/2, 0);
-
-    pros::delay(50);
-  }
-
-}
+//     // get robot position
 
 
-void OdomDebug::taskFnc(void* input) {
-  pros::delay(500);
-  OdomDebug* that = static_cast<OdomDebug*>(input);
-  that->run();
-}
+//     // assign labels
+//     std::string text =
+//     "X: " + std::to_string(tracker->getState(StateMode::CARTESIAN).x.convert(foot)) + "\n" +
+//     "Y: " + std::to_string(tracker->getState(StateMode::CARTESIAN).y.convert(foot)) + "\n" +
+//     "Theta: " + std::to_string(tracker->getState(StateMode::CARTESIAN).theta.convert(degree)) + "\n" +
+//     "Left: " + std::to_string(tracker->getSensorVals()[0]) + "\n" +
+//     "Right: " + std::to_string(tracker->getSensorVals()[1]);
+//     lv_label_set_text(label, text.c_str());
+//     lv_obj_align(label, container, LV_ALIGN_CENTER, -lv_obj_get_width(container)/2 + (lv_obj_get_width(container) - fieldDim)/2, 0);
+
+//     pros::delay(50);
+//   }
+
+// }
+
+
+// void OdomDebug::taskFnc(void* input) {
+//   pros::delay(500);
+//   OdomDebug* that = static_cast<OdomDebug*>(input);
+//   that->run();
+// }

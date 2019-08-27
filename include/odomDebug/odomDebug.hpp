@@ -38,7 +38,7 @@ public:
    * @param y     
    * @param theta 
    */
-  void setPosition(QLength x, QLength y, QAngle theta);
+  void setPosition(QLength ix, QLength iy, QAngle itheta);
 
   /**
    * Sets the position of the robot
@@ -46,7 +46,7 @@ public:
    * @param y     inches
    * @param theta radians
    */
-  void setPosition(double x, double y, double theta);
+  void setPosition(double ix, double iy, double itheta);
 
   /**
    * Sets the encoder values to the display
@@ -86,6 +86,7 @@ private:
   lv_obj_t* line = nullptr; 
   lv_style_t lineStyle;
   std::vector<lv_point_t> linePoints = {{0, 0}, {0, 0}}; // lines positions
+  int lineWidth = 0;
   int lineLength = 0;
 
   // status label
@@ -102,28 +103,6 @@ private:
 
   static lv_res_t tileAction(lv_obj_t*); // action when tile is pressed
   static lv_res_t resetAction(lv_obj_t*); // action when reset button is pressed
-};
 
-/**
- * Okapi units that represent a tile (2ft) and a court(12ft)
- * Literals are `_tl` and `_crt`, respectivly
- */
-namespace okapi {
-  constexpr QLength tile = 2 * foot;
-  constexpr QLength court = 12 * foot;
-  inline namespace literals {
-    constexpr QLength operator"" _tl(long double x) {
-      return static_cast<double>(x) * tile;
-    }
-    constexpr QLength operator"" _crt(long double x) {
-      return static_cast<double>(x) * court;
-    }
-    constexpr QLength operator"" _tl(unsigned long long int x) {
-      return static_cast<double>(x) * tile;
-    }
-    constexpr QLength operator"" _crt(unsigned long long int x) {
-      return static_cast<double>(x) * court;
-    }
-  }
-}
+};
 
