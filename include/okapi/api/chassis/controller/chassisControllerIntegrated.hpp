@@ -19,19 +19,22 @@ class ChassisControllerIntegrated : public virtual ChassisController {
    * ChassisController using the V5 motor's integrated control. Puts the motors into degree units.
    * Throws a std::invalid_argument exception if the gear ratio is zero.
    *
+   * @param itimeUtil The TimeUtil.
    * @param imodelArgs ChassisModelArgs
    * @param ileftControllerArgs left side controller params
    * @param irightControllerArgs right side controller params
    * @param igearset motor internal gearset and gear ratio
    * @param iscales see ChassisScales docs
+   * @param ilogger The logger this instance will log to.
    */
   ChassisControllerIntegrated(
     const TimeUtil &itimeUtil,
     const std::shared_ptr<ChassisModel> &imodel,
     std::unique_ptr<AsyncPosIntegratedController> ileftController,
     std::unique_ptr<AsyncPosIntegratedController> irightController,
-    AbstractMotor::GearsetRatioPair igearset = AbstractMotor::gearset::red,
-    const ChassisScales &iscales = ChassisScales({1, 1}));
+    AbstractMotor::GearsetRatioPair igearset = AbstractMotor::gearset::green,
+    const ChassisScales &iscales = ChassisScales({1, 1}, imev5GreenTPR),
+    const std::shared_ptr<Logger> &ilogger = std::make_shared<Logger>());
 
   /**
    * Drives the robot straight for a distance (using closed-loop control).
@@ -117,8 +120,8 @@ class ChassisControllerIntegrated : public virtual ChassisController {
   AbstractMotor::GearsetRatioPair getGearsetRatioPair() const override;
 
   protected:
-  Logger *logger;
-  std::unique_ptr<AbstractRate> rate;
+  std::shared_ptr<Logger> logger;
+  TimeUtil timeUtil;
   std::unique_ptr<AsyncPosIntegratedController> leftController;
   std::unique_ptr<AsyncPosIntegratedController> rightController;
   int lastTarget;

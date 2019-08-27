@@ -7,67 +7,135 @@
  */
 #pragma once
 
+#include "okapi/api/coreProsAPI.hpp"
 #include "okapi/api/util/abstractTimer.hpp"
+#include "okapi/api/util/mathUtil.hpp"
 #include <memory>
+#include <mutex>
+
+#define LOG_DEBUG(msg) logger->debug([=]() { return msg; })
+#define LOG_INFO(msg) logger->info([=]() { return msg; })
+#define LOG_WARN(msg) logger->warn([=]() { return msg; })
+#define LOG_ERROR(msg) logger->error([=]() { return msg; })
 
 namespace okapi {
 class Logger {
   public:
-  enum class LogLevel { off = 0, debug = 4, info = 3, warn = 2, error = 1 };
+  enum class LogLevel { debug = 4, info = 3, warn = 2, error = 1, off = 0 };
 
   /**
-   * Initializes the logger. If the logger is not initialized when logging methods are called,
-   * nothing will be logged.
+   * A logger that does nothing.
+   */
+  Logger() noexcept : Logger(nullptr, nullptr, LogLevel::off) {
+  }
+
+  /**
+   * A logger that opens the input file name with append permissions.
    *
    * @param itimer A timer used to get the current time for log statements.
-   * @param logfileName The name of the log file to open.
-   * @param level The log level. Log statements above this level will be disabled.
+   * @param ifileName The name of the log file to open.
+   * @param ilevel The log level. Log statements more verbose than this level will be disabled.
    */
-  static void initialize(std::unique_ptr<AbstractTimer> itimer,
-                         std::string_view filename,
-                         LogLevel level) noexcept;
+  Logger(std::unique_ptr<AbstractTimer> itimer,
+         std::string_view ifileName,
+         const LogLevel &ilevel) noexcept
+    : Logger(std::move(itimer),
+             fopen(ifileName.data(), ifileName.find("/ser/") ? "a" : "w"),
+             ilevel) {
+  }
 
   /**
-   * Initializes the logger. If the logger is not initialized when logging methods are called,
-   * nothing will be logged.
+   * A logger that uses an existing file handle. Will be closed by the logger!
    *
    * @param itimer A timer used to get the current time for log statements.
-   * @param logfileName The name of the log file to open.
-   * @param level The log level. Log statements above this level will be disabled.
+   * @param ifile The log file to open. Will be closed by the logger!
+   * @param ilevel The log level. Log statements more verbose than this level will be disabled.
    */
-  static void
-  initialize(std::unique_ptr<AbstractTimer> itimer, FILE *file, LogLevel level) noexcept;
+  Logger(std::unique_ptr<AbstractTimer> itimer, FILE *const ifile, const LogLevel &ilevel) noexcept
+    : timer(std::move(itimer)), logLevel(ilevel), logfile(ifile) {
+  }
 
-  /**
-   * Get the logger instance.
-   */
-  static Logger *instance() noexcept;
+  ~Logger() {
+    if (logfile) {
+      fclose(logfile);
+      logfile = nullptr;
+    }
+  }
 
-  /**
-   * Set a new logging level. Log statements above this level will be disabled. For example, if the
-   * level is set to LogLevel::warn, then LogLevel::warn and LogLevel::error will be enabled, but
-   * LogLevel::info and LogLevel::debug will be disabled.
-   */
-  static void setLogLevel(LogLevel level) noexcept;
+  constexpr bool isDebugLevelEnabled() const noexcept {
+    return toUnderlyingType(logLevel) >= toUnderlyingType(LogLevel::debug);
+  }
 
-  void debug(std::string_view message) const noexcept;
+  template <typename T> void debug(T ilazyMessage) noexcept {
+    if (isDebugLevelEnabled() && logfile && timer) {
+      std::scoped_lock lock(logfileMutex);
+      fprintf(logfile,
+              "%ld (%s) DEBUG: %s\n",
+              static_cast<long>(timer->millis().convert(millisecond)),
+              CrossplatformThread::getName().c_str(),
+              ilazyMessage().c_str());
+    }
+  }
 
-  void info(std::string_view message) const noexcept;
+  constexpr bool isInfoLevelEnabled() const noexcept {
+    return toUnderlyingType(logLevel) >= toUnderlyingType(LogLevel::info);
+  }
 
-  void warn(std::string_view message) const noexcept;
+  template <typename T> void info(T ilazyMessage) noexcept {
+    if (isInfoLevelEnabled() && logfile && timer) {
+      std::scoped_lock lock(logfileMutex);
+      fprintf(logfile,
+              "%ld (%s) INFO: %s\n",
+              static_cast<long>(timer->millis().convert(millisecond)),
+              CrossplatformThread::getName().c_str(),
+              ilazyMessage().c_str());
+    }
+  }
 
-  void error(std::string_view message) const noexcept;
+  constexpr bool isWarnLevelEnabled() const noexcept {
+    return toUnderlyingType(logLevel) >= toUnderlyingType(LogLevel::warn);
+  }
+
+  template <typename T> void warn(T ilazyMessage) noexcept {
+    if (isWarnLevelEnabled() && logfile && timer) {
+      std::scoped_lock lock(logfileMutex);
+      fprintf(logfile,
+              "%ld (%s) WARN: %s\n",
+              static_cast<long>(timer->millis().convert(millisecond)),
+              CrossplatformThread::getName().c_str(),
+              ilazyMessage().c_str());
+    }
+  }
+
+  constexpr bool isErrorLevelEnabled() const noexcept {
+    return toUnderlyingType(logLevel) >= toUnderlyingType(LogLevel::error);
+  }
+
+  template <typename T> void error(T ilazyMessage) noexcept {
+    if (isErrorLevelEnabled() && logfile && timer) {
+      std::scoped_lock lock(logfileMutex);
+      fprintf(logfile,
+              "%ld (%s) ERROR: %s\n",
+              static_cast<long>(timer->millis().convert(millisecond)),
+              CrossplatformThread::getName().c_str(),
+              ilazyMessage().c_str());
+    }
+  }
 
   /**
    * Closes the connection to the log file.
    */
-  void close() noexcept;
+  constexpr void close() noexcept {
+    if (logfile) {
+      fclose(logfile);
+      logfile = nullptr;
+    }
+  }
 
   private:
-  Logger();
-  static Logger *s_instance;
-  static std::unique_ptr<AbstractTimer> timer;
-  static LogLevel logLevel;
-  static FILE *logfile;
+  const std::unique_ptr<AbstractTimer> timer;
+  const LogLevel logLevel;
+  FILE *logfile;
+  CrossplatformMutex logfileMutex;
 };
 } // namespace okapi
