@@ -77,7 +77,7 @@ private:
   // robot line
   lv_obj_t* line = nullptr; 
   lv_style_t lineStyle;
-  std::vector<lv_point_t> linePoints = {{0, 0}, {0, 0}}; // line positions
+  std::array<lv_point_t, 2> linePoints = {{0, 0}, {0, 0}}; // line positions
   int lineWidth = 0;
   int lineLength = 0;
 

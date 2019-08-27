@@ -151,11 +151,12 @@ OdomDebug::OdomDebug(lv_obj_t* parent, lv_color_t mainColor)
   /**
    * Status Label
    */
-  lv_obj_t* statusLabel = lv_label_create(container, NULL);
+  statusLabel = lv_label_create(container, NULL);
   lv_style_copy(&textStyle, &lv_style_plain);
   textStyle.text.color = LV_COLOR_WHITE;
   textStyle.text.opa = LV_OPA_100;
   lv_obj_set_style(statusLabel, &textStyle);
+  lv_label_set_text(statusLabel, "Odom Data Needed");
 
   /**
   * Reset Button
