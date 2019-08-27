@@ -10,8 +10,9 @@
 #include "okapi/api/chassis/controller/chassisScales.hpp"
 #include "okapi/api/chassis/model/skidSteerModel.hpp"
 #include "okapi/api/control/async/asyncPositionController.hpp"
-#include "okapi/api/control/util/pathfinderUtil.hpp"
+#include "okapi/api/units/QAngle.hpp"
 #include "okapi/api/units/QAngularSpeed.hpp"
+#include "okapi/api/units/QLength.hpp"
 #include "okapi/api/units/QSpeed.hpp"
 #include "okapi/api/util/logging.hpp"
 #include "okapi/api/util/timeUtil.hpp"
@@ -23,28 +24,33 @@ extern "C" {
 }
 
 namespace okapi {
+struct Point {
+  QLength x;    // X coordinate relative to the start of the movement
+  QLength y;    // Y coordinate relative to the start of the movement
+  QAngle theta; // Exit angle relative to the start of the movement
+};
+
 class AsyncMotionProfileController : public AsyncPositionController<std::string, Point> {
   public:
   /**
    * An Async Controller which generates and follows 2D motion profiles. Throws a
    * std::invalid_argument exception if the gear ratio is zero.
    *
-   * @param ilimits The default limits.
+   * @param imaxVel The maximum possible velocity in m/s.
+   * @param imaxAccel The maximum possible acceleration in m/s/s.
+   * @param imaxJerk The maximum possible jerk in m/s/s/s.
    * @param imodel The chassis model to control.
-   * @param iscales The chassis dimensions.
-   * @param ipair The gearset.
-   * @param ilogger The logger this instance will log to.
+   * @param iwidth The chassis wheelbase width.
    */
   AsyncMotionProfileController(const TimeUtil &itimeUtil,
-                               const PathfinderLimits &ilimits,
+                               double imaxVel,
+                               double imaxAccel,
+                               double imaxJerk,
                                const std::shared_ptr<ChassisModel> &imodel,
                                const ChassisScales &iscales,
-                               const AbstractMotor::GearsetRatioPair &ipair,
-                               const std::shared_ptr<Logger> &ilogger = std::make_shared<Logger>());
+                               AbstractMotor::GearsetRatioPair ipair);
 
-  AsyncMotionProfileController(AsyncMotionProfileController &&other) = delete;
-
-  AsyncMotionProfileController &operator=(AsyncMotionProfileController &&other) = delete;
+  AsyncMotionProfileController(AsyncMotionProfileController &&other) noexcept;
 
   ~AsyncMotionProfileController() override;
 
@@ -62,30 +68,11 @@ class AsyncMotionProfileController : public AsyncPositionController<std::string,
   void generatePath(std::initializer_list<Point> iwaypoints, const std::string &ipathId);
 
   /**
-   * Generates a path which intersects the given waypoints and saves it internally with a key of
-   * pathId. Call executePath() with the same pathId to run it.
-   *
-   * If the waypoints form a path which is impossible to achieve, an instance of std::runtime_error
-   * is thrown (and an error is logged) which describes the waypoints. If there are no waypoints,
-   * no path is generated.
-   *
-   * @param iwaypoints The waypoints to hit on the path.
-   * @param ipathId A unique identifier to save the path with.
-   * @param ilimits The limits to use for this path only.
-   */
-  void generatePath(std::initializer_list<Point> iwaypoints,
-                    const std::string &ipathId,
-                    const PathfinderLimits &ilimits);
-
-  /**
    * Removes a path and frees the memory it used.
-   * This function returns true if the path was either deleted or didn't exist in the first place.
-   * It returns false if the path could not be removed because it is running.
    *
    * @param ipathId A unique identifier for the path, previously passed to generatePath()
-   * @return True if the path no longer exists
    */
-  bool removePath(const std::string &ipathId);
+  void removePath(const std::string &ipathId);
 
   /**
    * Gets the identifiers of all paths saved in this AsyncMotionProfileController.
@@ -108,9 +95,8 @@ class AsyncMotionProfileController : public AsyncPositionController<std::string,
    *
    * @param ipathId A unique identifier for the path, previously passed to generatePath().
    * @param ibackwards Whether to follow the profile backwards.
-   * @param imirrored Whether to follow the profile mirrored.
    */
-  void setTarget(std::string ipathId, bool ibackwards, bool imirrored = false);
+  void setTarget(std::string ipathId, bool ibackwards);
 
   /**
    * Writes the value of the controller output. This method might be automatically called in another
@@ -136,25 +122,8 @@ class AsyncMotionProfileController : public AsyncPositionController<std::string,
    * blocks until the controller has settled. Does not save the path which was generated.
    *
    * @param iwaypoints The waypoints to hit on the path.
-   * @param ibackwards Whether to follow the profile backwards.
-   * @param imirrored Whether to follow the profile mirrored.
    */
-  void
-  moveTo(std::initializer_list<Point> iwaypoints, bool ibackwards = false, bool imirrored = false);
-
-  /**
-   * Generates a new path from the position (typically the current position) to the target and
-   * blocks until the controller has settled. Does not save the path which was generated.
-   *
-   * @param iwaypoints The waypoints to hit on the path.
-   * @param ilimits The limits to use for this path only.
-   * @param ibackwards Whether to follow the profile backwards.
-   * @param imirrored Whether to follow the profile mirrored.
-   */
-  void moveTo(std::initializer_list<Point> iwaypoints,
-              const PathfinderLimits &ilimits,
-              bool ibackwards = false,
-              bool imirrored = false);
+  void moveTo(std::initializer_list<Point> iwaypoints);
 
   /**
    * Returns the last error of the controller. Does not update when disabled. This implementation
@@ -203,53 +172,10 @@ class AsyncMotionProfileController : public AsyncPositionController<std::string,
   bool isDisabled() const override;
 
   /**
-   * Sets the "absolute" zero position of the controller to its current position.
-   *
-   * This implementation does nothing because the API always requires the starting position to be
-   * specified.
-   */
-  void tarePosition() override;
-
-  /**
    * Starts the internal thread. This should not be called by normal users. This method is called
    * by the AsyncControllerFactory when making a new instance of this class.
    */
   void startThread();
-
-  /**
-   * Returns the underlying thread handle.
-   *
-   * @return The underlying thread handle.
-   */
-  CrossplatformThread *getThread() const;
-
-  /**
-   * Saves a generated path to files.
-   * Paths are stored as <ipathId>.<left/right>.csv
-   * An SD card must be inserted into the brain and the directory must exist.
-   * idirectory can be prefixed with /usd/, but it this is not required.
-   *
-   * @param idirectory The directory to store the path files in
-   * @param ipathId The path ID of the generated path
-   */
-  void storePath(const std::string &idirectory, const std::string &ipathId);
-
-  /**
-   * Loads a path from a directory on the SD card containing path CSV files.
-   * /usd/ is automatically prepended to idirectory if it is not specified.
-   *
-   * @param idirectory The directory that the path files are stored in
-   * @param ipathId The path ID that the paths are stored under (and will be loaded into)
-   */
-  void loadPath(const std::string &idirectory, const std::string &ipathId);
-
-  /**
-   * Attempts to remove a path without stopping execution, then if that fails,
-   * disables the controller and removes the path
-   *
-   * @param ipathId The path ID that will be removed
-   */
-  void forceRemovePath(const std::string &ipathId);
 
   protected:
   struct TrajectoryPair {
@@ -258,19 +184,19 @@ class AsyncMotionProfileController : public AsyncPositionController<std::string,
     int length;
   };
 
-  std::shared_ptr<Logger> logger;
+  Logger *logger;
   std::map<std::string, TrajectoryPair> paths{};
-  PathfinderLimits limits;
+  double maxVel{0};
+  double maxAccel{0};
+  double maxJerk{0};
   std::shared_ptr<ChassisModel> model;
   ChassisScales scales;
   AbstractMotor::GearsetRatioPair pair;
   TimeUtil timeUtil;
-  CrossplatformMutex pathRemoveMutex;
 
   std::string currentPath{""};
   std::atomic_bool isRunning{false};
   std::atomic_int direction{1};
-  std::atomic_bool mirrored{false};
   std::atomic_bool disabled{false};
   std::atomic_bool dtorCalled{false};
   CrossplatformThread *task{nullptr};
@@ -290,21 +216,5 @@ class AsyncMotionProfileController : public AsyncPositionController<std::string,
    * @return motor frame speed
    */
   QAngularSpeed convertLinearToRotational(QSpeed linear) const;
-
-  std::string
-  getPathErrorMessage(const std::vector<Waypoint> &points, const std::string &ipathId, int length);
-
-  /**
-   * Joins and escapes a directory and file name
-   *
-   * @param directory The directory path, separated by forward slashes (/) and with or without a
-   * trailing slash
-   * @param filename The file name in the directory
-   * @return the fully qualified and legal path name
-   */
-  static std::string makeFilePath(const std::string &directory, const std::string &filename);
-
-  void internalStorePath(FILE *leftPathFile, FILE *rightPathFile, const std::string &ipathId);
-  void internalLoadPath(FILE *leftPathFile, FILE *rightPathFile, const std::string &ipathId);
 };
 } // namespace okapi

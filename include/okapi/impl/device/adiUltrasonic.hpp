@@ -9,24 +9,28 @@
 
 #include "api.h"
 #include "okapi/api/control/controllerInput.hpp"
-#include "okapi/api/filter/passthroughFilter.hpp"
+#include "okapi/api/filter/medianFilter.hpp"
 #include <memory>
 
 namespace okapi {
 class ADIUltrasonic : public ControllerInput<double> {
   public:
   /**
+   * An ultrasonic sensor in the ADI (3-wire) ports. Uses a 5-tap MedianFilter by default.
+   *
+   * @param iportTop top port
+   * @param iportBottom bottom port
+   */
+  ADIUltrasonic(std::uint8_t iportTop, std::uint8_t iportBottom);
+
+  /**
    * An ultrasonic sensor in the ADI (3-wire) ports.
    *
-   * @param iportPing The port connected to the orange OUTPUT cable. This should be in the next
-   * highest port following iportEcho.
-   * @param iportEcho The port connected to the yellow INPUT cable. This should be in port 1, 3,
-   * 5, or 7 ('A', 'C', 'E', 'G').
+   * @param iportTop top port
+   * @param iportBottom bottom port
    * @param ifilter the filter to use for filtering measurements
    */
-  ADIUltrasonic(std::uint8_t iportPing,
-                std::uint8_t iportEcho,
-                std::unique_ptr<Filter> ifilter = std::make_unique<PassthroughFilter>());
+  ADIUltrasonic(std::uint8_t iportTop, std::uint8_t iportBottom, std::unique_ptr<Filter> ifilter);
 
   virtual ~ADIUltrasonic();
 
@@ -44,7 +48,7 @@ class ADIUltrasonic : public ControllerInput<double> {
   virtual double controllerGet() override;
 
   protected:
-  pros::c::adi_ultrasonic_t ultra;
+  pros::ADIUltrasonic ultra;
   std::unique_ptr<Filter> filter;
 };
 } // namespace okapi

@@ -27,8 +27,7 @@ class PIDTunerFactory {
                          std::int32_t inumIterations = 5,
                          std::int32_t inumParticles = 16,
                          double ikSettle = 1,
-                         double ikITAE = 2,
-                         const std::shared_ptr<Logger> &ilogger = std::make_shared<Logger>());
+                         double ikITAE = 2);
 
   static std::unique_ptr<PIDTuner>
   createPtr(const std::shared_ptr<ControllerInput<double>> &iinput,
@@ -44,7 +43,6 @@ class PIDTunerFactory {
             std::int32_t inumIterations = 5,
             std::int32_t inumParticles = 16,
             double ikSettle = 1,
-            double ikITAE = 2,
-            const std::shared_ptr<Logger> &ilogger = std::make_shared<Logger>());
+            double ikITAE = 2);
 };
 } // namespace okapi

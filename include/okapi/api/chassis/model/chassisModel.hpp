@@ -27,14 +27,14 @@ class ChassisModel : public ReadOnlyChassisModel {
   ChassisModel &operator=(const ChassisModel &) = delete;
 
   /**
-   * Drive the robot forwards (using open-loop control). Uses velocity mode.
+   * Drive the robot forwards (using open-loop control).
    *
    * @param ipower motor power
    */
-  virtual void forward(double ispeed) = 0;
+  virtual void forward(double ispeed) const = 0;
 
   /**
-   * Drive the robot in an arc (using open-loop control). Uses velocity mode.
+   * Drive the robot in an arc (using open-loop control).
    * The algorithm is (approximately):
    *   leftPower = forwardSpeed + yaw
    *   rightPower = forwardSpeed - yaw
@@ -42,28 +42,17 @@ class ChassisModel : public ReadOnlyChassisModel {
    * @param iforwadSpeed speed in the forward direction
    * @param iyaw speed around the vertical axis
    */
-  virtual void driveVector(double iforwardSpeed, double iyaw) = 0;
+  virtual void driveVector(double iforwardSpeed, double iyaw) const = 0;
 
   /**
-   * Drive the robot in an arc. Uses voltage mode.
-   * The algorithm is (approximately):
-   *   leftPower = forwardSpeed + yaw
-   *   rightPower = forwardSpeed - yaw
-   *
-   * @param iforwadSpeed speed in the forward direction
-   * @param iyaw speed around the vertical axis
-   */
-  virtual void driveVectorVoltage(double iforwardSpeed, double iyaw) = 0;
-
-  /**
-   * Turn the robot clockwise (using open-loop control). Uses velocity mode.
+   * Turn the robot clockwise (using open-loop control).
    *
    * @param ispeed motor power
    */
-  virtual void rotate(double ispeed) = 0;
+  virtual void rotate(double ispeed) const = 0;
 
   /**
-   * Stop the robot (set all the motors to 0). Uses velocity mode.
+   * Stop the robot (set all the motors to 0).
    */
   virtual void stop() = 0;
 
@@ -74,7 +63,7 @@ class ChassisModel : public ReadOnlyChassisModel {
    * @param irightSpeed right side speed
    * @param ithreshold deadband on joystick values
    */
-  virtual void tank(double ileftSpeed, double irightSpeed, double ithreshold = 0) = 0;
+  virtual void tank(double ileftSpeed, double irightSpeed, double ithreshold = 0) const = 0;
 
   /**
    * Drive the robot with an arcade drive layout. Uses voltage mode.
@@ -83,47 +72,47 @@ class ChassisModel : public ReadOnlyChassisModel {
    * @param iyaw speed around the vertical axis
    * @param ithreshold deadband on joystick values
    */
-  virtual void arcade(double iforwardSpeed, double iyaw, double ithreshold = 0) = 0;
+  virtual void arcade(double iforwardSpeed, double iyaw, double ithreshold = 0) const = 0;
 
   /**
-   * Power the left side motors. Uses velocity mode.
+   * Power the left side motors.
    *
    * @param ipower motor power
    */
-  virtual void left(double ispeed) = 0;
+  virtual void left(double ispeed) const = 0;
 
   /**
-   * Power the right side motors. Uses velocity mode.
+   * Power the right side motors.
    *
    * @param ipower motor power
    */
-  virtual void right(double ispeed) = 0;
+  virtual void right(double ispeed) const = 0;
 
   /**
    * Reset the sensors to their zero point.
    */
-  virtual void resetSensors() = 0;
+  virtual void resetSensors() const = 0;
 
   /**
    * Set the brake mode for each motor.
    *
    * @param mode new brake mode
    */
-  virtual void setBrakeMode(AbstractMotor::brakeMode mode) = 0;
+  virtual void setBrakeMode(AbstractMotor::brakeMode mode) const = 0;
 
   /**
    * Set the encoder units for each motor.
    *
    * @param units new motor encoder units
    */
-  virtual void setEncoderUnits(AbstractMotor::encoderUnits units) = 0;
+  virtual void setEncoderUnits(AbstractMotor::encoderUnits units) const = 0;
 
   /**
    * Set the gearset for each motor.
    *
    * @param gearset new motor gearset
    */
-  virtual void setGearing(AbstractMotor::gearset gearset) = 0;
+  virtual void setGearing(AbstractMotor::gearset gearset) const = 0;
 
   /**
    * Sets new PID constants.
@@ -133,7 +122,7 @@ class ChassisModel : public ReadOnlyChassisModel {
    * @param ikI the integral constant
    * @param ikD the derivative constant
    */
-  virtual void setPosPID(double ikF, double ikP, double ikI, double ikD) = 0;
+  virtual void setPosPID(double ikF, double ikP, double ikI, double ikD) const = 0;
 
   /**
    * Sets new PID constants.
@@ -154,7 +143,7 @@ class ChassisModel : public ReadOnlyChassisModel {
                              double ifilter,
                              double ilimit,
                              double ithreshold,
-                             double iloopSpeed) = 0;
+                             double iloopSpeed) const = 0;
 
   /**
    * Sets new PID constants.
@@ -164,7 +153,7 @@ class ChassisModel : public ReadOnlyChassisModel {
    * @param ikI the integral constant
    * @param ikD the derivative constant
    */
-  virtual void setVelPID(double ikF, double ikP, double ikI, double ikD) = 0;
+  virtual void setVelPID(double ikF, double ikP, double ikI, double ikD) const = 0;
 
   /**
    * Sets new PID constants.
@@ -185,7 +174,7 @@ class ChassisModel : public ReadOnlyChassisModel {
                              double ifilter,
                              double ilimit,
                              double ithreshold,
-                             double iloopSpeed) = 0;
+                             double iloopSpeed) const = 0;
 
   /**
    * Sets a new maximum velocity in RPM [0-600].
@@ -195,25 +184,11 @@ class ChassisModel : public ReadOnlyChassisModel {
   virtual void setMaxVelocity(double imaxVelocity);
 
   /**
-   * Returns the maximum velocity in RPM [0-600].
-   *
-   * @return The maximum velocity in RPM [0-600].
-   */
-  virtual double getMaxVelocity() const;
-
-  /**
    * Sets a new maximum voltage in mV [0-12000].
    *
    * @param imaxVoltage the new maximum voltage
    */
   virtual void setMaxVoltage(double imaxVoltage);
-
-  /**
-   * Returns the maximum voltage in mV [0-12000].
-   *
-   * @return The maximum voltage in mV [0-12000].
-   */
-  virtual double getMaxVoltage() const;
 
   protected:
   double maxVelocity;

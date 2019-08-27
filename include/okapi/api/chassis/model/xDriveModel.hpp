@@ -58,7 +58,7 @@ class XDriveModel : public ChassisModel {
    *
    * @param ispeed motor power
    */
-  void forward(double ipower) override;
+  void forward(double ipower) const override;
 
   /**
    * Drive the robot in an arc (using open-loop control). Uses velocity mode.
@@ -69,25 +69,14 @@ class XDriveModel : public ChassisModel {
    * @param iforwardSpeed speed in the forward direction
    * @param iyaw speed around the vertical axis
    */
-  void driveVector(double iforwardSpeed, double iyaw) override;
-
-  /**
-   * Drive the robot in an arc. Uses voltage mode.
-   * The algorithm is (approximately):
-   *   leftPower = forwardSpeed + yaw
-   *   rightPower = forwardSpeed - yaw
-   *
-   * @param iforwadSpeed speed in the forward direction
-   * @param iyaw speed around the vertical axis
-   */
-  void driveVectorVoltage(double iforwardSpeed, double iyaw) override;
+  void driveVector(double iforwardSpeed, double iyaw) const override;
 
   /**
    * Turn the robot clockwise (using open-loop control). Uses velocity mode.
    *
    * @param ipower motor power
    */
-  void rotate(double ipower) override;
+  void rotate(double ipower) const override;
 
   /**
    * Stop the robot (set all the motors to 0). Uses velocity mode.
@@ -101,7 +90,7 @@ class XDriveModel : public ChassisModel {
    * @param irightSpeed right side speed
    * @param ithreshold deadband on joystick values
    */
-  void tank(double ileftSpeed, double irightSpeed, double ithreshold = 0) override;
+  void tank(double ileftSpeed, double irightSpeed, double ithreshold = 0) const override;
 
   /**
    * Drive the robot with an arcade drive layout. Uses voltage mode.
@@ -110,7 +99,7 @@ class XDriveModel : public ChassisModel {
    * @param iyaw speed around the vertical axis
    * @param ithreshold deadband on joystick values
    */
-  void arcade(double iforwardSpeed, double iyaw, double ithreshold = 0) override;
+  void arcade(double iforwardSpeed, double iyaw, double ithreshold = 0) const override;
 
   /**
    * Drive the robot with an arcade drive layout. Uses voltage mode.
@@ -121,21 +110,21 @@ class XDriveModel : public ChassisModel {
    * @param ithreshold deadband on joystick values
    */
   virtual void
-  xArcade(double irightSpeed, double iforwardSpeed, double iyaw, double ithreshold = 0);
+  xArcade(double irightSpeed, double iforwardSpeed, double iyaw, double ithreshold = 0) const;
 
   /**
    * Power the left side motors. Uses velocity mode.
    *
    * @param ipower motor power
    */
-  void left(double ipower) override;
+  void left(double ipower) const override;
 
   /**
    * Power the right side motors. Uses velocity mode.
    *
    * @param ipower motor power
    */
-  void right(double ipower) override;
+  void right(double ipower) const override;
 
   /**
    * Read the sensors.
@@ -147,28 +136,28 @@ class XDriveModel : public ChassisModel {
   /**
    * Reset the sensors to their zero point.
    */
-  void resetSensors() override;
+  void resetSensors() const override;
 
   /**
    * Set the brake mode for each motor.
    *
    * @param mode new brake mode
    */
-  void setBrakeMode(AbstractMotor::brakeMode mode) override;
+  void setBrakeMode(AbstractMotor::brakeMode mode) const override;
 
   /**
    * Set the encoder units for each motor.
    *
    * @param units new motor encoder units
    */
-  void setEncoderUnits(AbstractMotor::encoderUnits units) override;
+  void setEncoderUnits(AbstractMotor::encoderUnits units) const override;
 
   /**
    * Set the gearset for each motor.
    *
    * @param gearset new motor gearset
    */
-  void setGearing(AbstractMotor::gearset gearset) override;
+  void setGearing(AbstractMotor::gearset gearset) const override;
 
   /**
    * Sets new PID constants.
@@ -179,7 +168,7 @@ class XDriveModel : public ChassisModel {
    * @param ikD the derivative constant
    * @return 1 if the operation was successful or PROS_ERR if the operation failed, setting errno.
    */
-  void setPosPID(double ikF, double ikP, double ikI, double ikD) override;
+  void setPosPID(double ikF, double ikP, double ikI, double ikD) const override;
 
   /**
    * Sets new PID constants.
@@ -201,7 +190,7 @@ class XDriveModel : public ChassisModel {
                      double ifilter,
                      double ilimit,
                      double ithreshold,
-                     double iloopSpeed) override;
+                     double iloopSpeed) const override;
 
   /**
    * Sets new PID constants.
@@ -212,7 +201,7 @@ class XDriveModel : public ChassisModel {
    * @param ikD the derivative constant
    * @return 1 if the operation was successful or PROS_ERR if the operation failed, setting errno.
    */
-  void setVelPID(double ikF, double ikP, double ikI, double ikD) override;
+  void setVelPID(double ikF, double ikP, double ikI, double ikD) const override;
 
   /**
    * Sets new PID constants.
@@ -234,7 +223,7 @@ class XDriveModel : public ChassisModel {
                      double ifilter,
                      double ilimit,
                      double ithreshold,
-                     double iloopSpeed) override;
+                     double iloopSpeed) const override;
 
   /**
    * Returns the top left motor.
