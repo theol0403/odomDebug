@@ -65,11 +65,12 @@ public:
 
 private:
 
-  lv_obj_t* container = nullptr; // lvgl parent container
-  lv_style_t cStyle; // container style
+  // parent container
+  lv_obj_t* container = nullptr; 
+  lv_style_t cStyle;
 
-  lv_obj_t* field = nullptr; // lvgl field container
-  lv_style_t fStyle; // field style
+  // field
+  lv_style_t fStyle; 
   double fieldDim = 0; // width and height of field container
 
   // tile styles
@@ -77,17 +78,37 @@ private:
   lv_style_t red;
   lv_style_t blue;
 
+  // robot point
+  lv_obj_t* led = nullptr; 
+  lv_style_t ledStyle;
+
+  // robot line
+  lv_obj_t* line = nullptr; 
+  lv_style_t lineStyle;
+  std::vector<lv_point_t> linePoints = {{0, 0}, {0, 0}}; // lines positions
+  int lineLength = 0;
+
+  // status label
+  lv_obj_t* statusLabel = nullptr;
+  lv_style_t textStyle;
+
+  // reset button styles
+  lv_style_t resetRel;
+  lv_style_t resetPr;
+
   // external callbacks to interface with odometry
   std::function<void(QLength x, QLength y, QAngle theta)> stateCallback = nullptr;
   std::function<void()> resetCallback = nullptr;
 
   static lv_res_t tileAction(lv_obj_t*); // action when tile is pressed
   static lv_res_t resetAction(lv_obj_t*); // action when reset button is pressed
+};
 
-  /**
-   * Okapi units that represent a tile (2ft) and a court(12ft)
-   * Literals are `_tl` and `_crt`, respectivly
-   */
+/**
+ * Okapi units that represent a tile (2ft) and a court(12ft)
+ * Literals are `_tl` and `_crt`, respectivly
+ */
+namespace okapi {
   constexpr QLength tile = 2 * foot;
   constexpr QLength court = 12 * foot;
   inline namespace literals {
@@ -104,5 +125,5 @@ private:
       return static_cast<double>(x) * court;
     }
   }
+}
 
-};
