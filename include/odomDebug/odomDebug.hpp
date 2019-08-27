@@ -33,35 +33,27 @@ public:
   void setResetCallback(std::function<void()> callback);
 
   /**
-   * Sets the position of the robot in QUnits
-   * @param x     
-   * @param y     
-   * @param theta 
-   */
-  void setPosition(QLength ix, QLength iy, QAngle itheta);
-
-  /**
-   * Sets the position of the robot
-   * @param x     inches
-   * @param y     inches
-   * @param theta radians
-   */
-  void setPosition(double ix, double iy, double itheta);
-
-  /**
-   * Sets the encoder values to the display
-   * @param left  the left encoder value
-   * @param right the right encoder value
-   */
-  void setSensorValues(double left, double right);
-
-  /**
-   * Sets the encoder values to the display
+   * Sets the position of the robot in QUnits and puts the sensor data on the display
+   * @param x      QLength
+   * @param y      QLength
+   * @param theta  QAngle
    * @param left   the left encoder value
    * @param right  the right encoder value
    * @param middle the middle encoder value
    */
-  void setSensorValues(double left, double right, double middle);
+  void setRobotData(QLength x, QLength y, QAngle theta, double left, double right, double middle = 0);
+
+  /**
+   * Sets the position of the robot and puts the sensor data on the display
+   * @param x     inches
+   * @param y     inches
+   * @param theta radians
+   * @param left   the left encoder value
+   * @param right  the right encoder value
+   * @param middle the middle encoder value
+   */
+  void setRobotData(double x, double y, double theta, double left, double right, double middle = 0);
+
 
 private:
 

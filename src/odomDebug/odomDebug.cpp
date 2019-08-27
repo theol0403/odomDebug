@@ -219,56 +219,53 @@ void OdomDebug::setResetCallback(std::function<void()> callback) {
 }
 
 /**
- * Sets the position of the robot in QUnits
- * @param x     
- * @param y     
- * @param theta 
- */
-void OdomDebug::setPosition(QLength ix, QLength iy, QAngle itheta) {
-  double x = ix.convert(court);
-  double y = (1_crt - iy).convert(court);
-  double theta = itheta.convert(radian);
-
-  // place point on field
-  lv_obj_set_pos(led, (x * fieldDim) - lv_obj_get_width(led)/2, (y * fieldDim) - lv_obj_get_height(led)/2 - 1);
-
-  // move start and end of line
-  linePoints[0] = {(int16_t)((x * fieldDim)), (int16_t)((y * fieldDim) - (lineWidth/2))};
-  double newY = lineLength * cos(theta);
-  double newX = lineLength * sin(theta);
-  linePoints[1] = {(int16_t)(newX + linePoints[0].x), (int16_t)(-newY + linePoints[0].y)};
-
-  lv_line_set_points(line, linePoints.data(), linePoints.size());
-  lv_obj_invalidate(line);
-}
-
-/**
- * Sets the position of the robot
- * @param x     inches
- * @param y     inches
- * @param theta radians
- */
-void OdomDebug::setPosition(double ix, double iy, double itheta) {
-  setPosition(ix * inch, iy * inch, itheta * radian);
-}
-
-/**
- * Sets the encoder values to the display
- * @param left  the left encoder value
- * @param right the right encoder value
- */
-void OdomDebug::setSensorValues(double left, double right) {
-
-}
-
-/**
- * Sets the encoder values to the display
+ * Sets the position of the robot in QUnits and puts the sensor data on the display
+ * @param x      QLength
+ * @param y      QLength
+ * @param theta  QAngle
  * @param left   the left encoder value
  * @param right  the right encoder value
  * @param middle the middle encoder value
  */
-void OdomDebug::setSensorValues(double left, double right, double middle) {
+void OdomDebug::setRobotData(QLength x, QLength y, QAngle theta, double left, double right, double middle) {
+  double cx = x.convert(court);
+  double cy = (1_crt - y).convert(court);
+  double ctheta = theta.convert(radian);
 
+  // place point on field
+  lv_obj_set_pos(led, (cx * fieldDim) - lv_obj_get_width(led)/2, (cy * fieldDim) - lv_obj_get_height(led)/2 - 1);
+
+  // move start and end of line
+  linePoints[0] = {(int16_t)((cx * fieldDim)), (int16_t)((cy * fieldDim) - (lineWidth/2))};
+  double newY = lineLength * cos(ctheta);
+  double newX = lineLength * sin(ctheta);
+  linePoints[1] = {(int16_t)(newX + linePoints[0].x), (int16_t)(-newY + linePoints[0].y)};
+
+  lv_line_set_points(line, linePoints.data(), linePoints.size());
+  lv_obj_invalidate(line);
+
+  std::string text =
+  "X: " + std::to_string(x.convert(foot)) + "\n" +
+  "Y: " + std::to_string(y.convert(foot)) + "\n" +
+  "Theta: " + std::to_string(theta.convert(degree)) + "\n" +
+  "Left: " + std::to_string(left) + "\n" +
+  "Right: " + std::to_string(right) + "\n" +
+  "Middle: " + std::to_string(middle);
+  lv_label_set_text(statusLabel, text.c_str());
+  lv_obj_align(statusLabel, container, LV_ALIGN_CENTER, -lv_obj_get_width(container)/2 + (lv_obj_get_width(container) - fieldDim)/2, 0);
+}
+
+/**
+ * Sets the position of the robot and puts the sensor data on the display
+ * @param x     inches
+ * @param y     inches
+ * @param theta radians
+ * @param left   the left encoder value
+ * @param right  the right encoder value
+ * @param middle the middle encoder value
+ */
+void OdomDebug::setRobotData(double x, double y, double theta, double left, double right, double middle) {
+  setRobotData(x * inch, y * inch, theta * radian, left, right, middle);
 }
 
 /**
@@ -294,38 +291,3 @@ lv_res_t OdomDebug::resetAction(lv_obj_t* btn) {
   // return LV_RES_OK;
 }
 
-
-/**
- * Main Processing Loop
- */
-// void OdomDebug::run() {
-
-
-
-
-//   while(true) {
-
-//     // get robot position
-
-
-//     // assign labels
-//     std::string text =
-//     "X: " + std::to_string(tracker->getState(StateMode::CARTESIAN).x.convert(foot)) + "\n" +
-//     "Y: " + std::to_string(tracker->getState(StateMode::CARTESIAN).y.convert(foot)) + "\n" +
-//     "Theta: " + std::to_string(tracker->getState(StateMode::CARTESIAN).theta.convert(degree)) + "\n" +
-//     "Left: " + std::to_string(tracker->getSensorVals()[0]) + "\n" +
-//     "Right: " + std::to_string(tracker->getSensorVals()[1]);
-//     lv_label_set_text(label, text.c_str());
-//     lv_obj_align(label, container, LV_ALIGN_CENTER, -lv_obj_get_width(container)/2 + (lv_obj_get_width(container) - fieldDim)/2, 0);
-
-//     pros::delay(50);
-//   }
-
-// }
-
-
-// void OdomDebug::taskFnc(void* input) {
-//   pros::delay(500);
-//   OdomDebug* that = static_cast<OdomDebug*>(input);
-//   that->run();
-// }
