@@ -1,4 +1,4 @@
-/**
+/*
  * @author Ryan Benasutti, WPI
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,8 +9,7 @@
 
 #include "okapi/api/chassis/controller/chassisControllerIntegrated.hpp"
 #include "okapi/api/chassis/controller/chassisControllerPid.hpp"
-#include "okapi/api/chassis/controller/odomChassisControllerIntegrated.hpp"
-#include "okapi/api/chassis/controller/odomChassisControllerPid.hpp"
+#include "okapi/api/chassis/controller/defaultOdomChassisController.hpp"
 #include "okapi/api/chassis/model/skidSteerModel.hpp"
 #include "okapi/api/chassis/model/xDriveModel.hpp"
 #include "okapi/api/util/logging.hpp"
@@ -30,7 +29,7 @@ class ChassisControllerBuilder {
    * @param ilogger The logger this instance will log to.
    */
   explicit ChassisControllerBuilder(
-    const std::shared_ptr<Logger> &ilogger = std::make_shared<Logger>());
+    const std::shared_ptr<Logger> &ilogger = Logger::getDefaultLogger());
 
   /**
    * Sets the motors using a skid-steer layout.
@@ -192,27 +191,33 @@ class ChassisControllerBuilder {
   /**
    * Sets the odometry information, causing the builder to generate an Odometry variant.
    *
+   * @param imode The new default StateMode used to interpret target points and query the Odometry
+   * state.
    * @param imoveThreshold The minimum length movement.
    * @param iturnThreshold The minimum angle turn.
    * @param iwheelVelDelta The maximum delta between wheel velocities to consider the robot as
    * driving straight.
    * @return An ongoing builder.
    */
-  ChassisControllerBuilder &withOdometry(const QLength &imoveThreshold = 10_mm,
-                                         const QAngle &iturnThreshold = 1_deg,
+  ChassisControllerBuilder &withOdometry(const StateMode &imode = StateMode::FRAME_TRANSFORMATION,
+                                         const QLength &imoveThreshold = 0_mm,
+                                         const QAngle &iturnThreshold = 0_deg,
                                          const QSpeed &iwheelVelDelta = 0.0001_mps);
 
   /**
    * Sets the odometry information, causing the builder to generate an Odometry variant.
    *
    * @param iodometry The odometry object.
+   * @param imode The new default StateMode used to interpret target points and query the Odometry
+   * state.
    * @param imoveThreshold The minimum length movement.
    * @param iturnThreshold The minimum angle turn.
    * @return An ongoing builder.
    */
   ChassisControllerBuilder &withOdometry(std::unique_ptr<Odometry> iodometry,
-                                         const QLength &imoveThreshold = 10_mm,
-                                         const QAngle &iturnThreshold = 1_deg);
+                                         const StateMode &imode = StateMode::FRAME_TRANSFORMATION,
+                                         const QLength &imoveThreshold = 0_mm,
+                                         const QAngle &iturnThreshold = 0_deg);
 
   /**
    * Sets the derivative filters. Uses a PassthroughFilter by default.
@@ -350,11 +355,12 @@ class ChassisControllerBuilder {
   bool gearsetSetByUser{false}; // Used so motors don't overwrite gearset set manually
   AbstractMotor::GearsetRatioPair gearset{AbstractMotor::gearset::invalid};
   ChassisScales scales{{1, 1}, imev5GreenTPR};
-  std::shared_ptr<Logger> controllerLogger = std::make_shared<Logger>();
+  std::shared_ptr<Logger> controllerLogger = Logger::getDefaultLogger();
 
   bool hasOdom{false}; // Whether odometry was passed
   std::unique_ptr<Odometry> odometry;
   QSpeed wheelVelDelta;
+  StateMode stateMode;
   QLength moveThreshold;
   QAngle turnThreshold;
 
@@ -365,8 +371,8 @@ class ChassisControllerBuilder {
 
   std::shared_ptr<ChassisControllerPID> buildCCPID();
   std::shared_ptr<ChassisControllerIntegrated> buildCCI();
-  std::shared_ptr<OdomChassisControllerPID> buildOCCPID();
-  std::shared_ptr<OdomChassisControllerIntegrated> buildOCCI();
+  std::shared_ptr<DefaultOdomChassisController>
+  buildDOCC(std::shared_ptr<ChassisController> chassisController);
   std::shared_ptr<SkidSteerModel> makeSkidSteerModel();
   std::shared_ptr<XDriveModel> makeXDriveModel();
 };
