@@ -20,6 +20,7 @@ public:
      * @param itheta QAngle
      */ 
     state_t(QLength ix, QLength iy, QAngle itheta);
+
     /** 
      * @param ix inches
      * @param iy inches
@@ -36,11 +37,13 @@ public:
     double left {0.0};
     double right {0.0};
     double middle {0.0};
+
     /**
      * @param ileft the left encoder value
      * @param iright the right encoder value
      */
     sensors_t(double ileft, double iright);
+
     /**
      * @param ileft the left encoder value
      * @param iright the right encoder value
@@ -50,6 +53,7 @@ public:
 
   private:
     bool hasMiddle {false};
+    friend class OdomDebug;
   };
 
 
