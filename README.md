@@ -18,7 +18,7 @@ You can now use odomDebug in your project.
 # Use as standalone project
 You can also use this repository as a standalone project and run it directly on the robot.
 Build by running `prosv5 make`.
-There is an example program in `src/opcontrol.cpp`. You will have to provide your own odometry.
+There is an example program in `src/opcontrol.cpp`. You will have to provide your own odometry, or use okapilib v4 odometry.
 
 # Use
 For a full example, see `src/opcontrol.cpp`
