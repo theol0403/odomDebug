@@ -3,7 +3,7 @@ Display the robot on a VEX field using odometry and LVGL.
 
 ![odomDebug](https://github.com/theol0403/odomDebug/raw/master/odomDebug.png)
 
-## Installation in external project
+# Installation in external project
 ### Use pre-built template
 Instead of building the project yourself you can use a pre-built template to apply to your external project.
 Download <a href="https://github.com/theol0403/odomDebug/raw/master/odomDebug%401.1.0.zip" target="_blank">`odomDebug@1.1.0.zip`</a> from the repository and then fetch into PROS as described below.
@@ -15,7 +15,7 @@ Now that you have a template, run `prosv5 c fetch <template>` to import the temp
 Finally, run `prosv5 c apply odomDebug --force-apply` in your destination project to install the package.
 You can now use odomDebug in your project. 
 
-## Use as standalone project
+# Use as standalone project
 You can also use this repository as a standalone project and run it directly on the robot.
 Build by running `prosv5 make`.
 There is an example program in `src/opcontrol.cpp`. You will have to provide your own odometry.
