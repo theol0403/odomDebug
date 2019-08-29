@@ -21,10 +21,11 @@ Download <a href="https://github.com/theol0403/odomDebug/raw/master/odomDebug%40
 ## Use as Standalone Project
 You can also use this repository as a standalone project and run it directly on the robot.
 Build by running `prosv5 make`.
-
 There is an example program in `src/opcontrol.cpp`. You will have to provide your own odometry.
 
 # Use
+For a full example, see `src/opcontrol.cpp`
+
 Include the header into your file:
 `#include "odomDebug/odomDebug.hpp"`
 
@@ -62,6 +63,7 @@ display.setResetCallback(resetSensors);
 ```
 
 To update the robot's position on the screen, you need to call `setData` in a loop. The syntax to do so is `display.setData({x, y, theta}, {left, right, middle});`
+
 Here are a few examples:
 ```cpp
 display.setData({0_in, 0_in, 0_deg}, {0, 0, 0}); // QUnits used for state
@@ -70,4 +72,4 @@ display.setData({0, 0, 0}, {0, 0}); // middle sensor ommited
 You can give the state QUnits, or you can give it numbers in these units: inch, inch, radian.
 The last middle sensor paramiter is optional.
 
-The complete example is in `opcontrol.cpp`
+The complete example is in `src/opcontrol.cpp`
