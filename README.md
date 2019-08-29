@@ -3,22 +3,19 @@ Display the robot on a VEX field using odometry and LVGL.
 
 ![odomDebug](https://github.com/theol0403/odomDebug/raw/master/odomDebug.png)
 
-# Installation
-## Use in External Project
+## Installation in external project
+### Use pre-built template
+Instead of building the project yourself you can use a pre-built template to apply to your external project.
+Download <a href="https://github.com/theol0403/odomDebug/raw/master/odomDebug%401.1.0.zip" target="_blank">`odomDebug@1.1.0.zip`</a> from the repository and then fetch into PROS as described below.
 ### Building
-To build, clone the repository and run `prosv5 make template`.
-
-Then run `prosv5 c fetch <template>` to import the package into PROS.
+To build the template yourself, clone the repository and run `prosv5 make template`.
+### Apply template to project 
+Now that you have a template, run `prosv5 c fetch <template>` to import the template into PROS.
 
 Finally, run `prosv5 c apply odomDebug --force-apply` in your destination project to install the package.
+You can now use odomDebug in your project. 
 
-You can now use odomDebug in your project.
-
-### Use Pre-built Package
-Instead of building the project yourself you can use a pre-built package to use in your external project.
-Download <a href="https://github.com/theol0403/odomDebug/raw/master/odomDebug%401.1.0.zip" target="_blank">`odomDebug@1.1.0.zip`</a> from the repository and then fetch into PROS as described above.
-
-## Use as Standalone Project
+## Use as standalone project
 You can also use this repository as a standalone project and run it directly on the robot.
 Build by running `prosv5 make`.
 There is an example program in `src/opcontrol.cpp`. You will have to provide your own odometry.
@@ -69,7 +66,7 @@ Here are a few examples:
 display.setData({0_in, 0_in, 0_deg}, {0, 0, 0}); // QUnits used for state
 display.setData({0, 0, 0}, {0, 0}); // middle sensor ommited
 ```
-You can give the state QUnits, or you can give it numbers in these units: inch, inch, radian.
+You can give the state QUnits, or you can give it numbers in these units: `inch, inch, radian`.
 The last middle sensor paramiter is optional.
 
 The complete example is in `src/opcontrol.cpp`
