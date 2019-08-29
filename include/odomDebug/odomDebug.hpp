@@ -76,7 +76,7 @@ public:
    * Sets the function to be called when a tile is pressed
    * @param callback a function that sets the odometry state
    */
-  void setStateCallback(std::function<void(QLength x, QLength y, QAngle theta)> callback);
+  void setStateCallback(std::function<void(state_t state)> callback);
 
   /**
    * Sets the function to be called when the reset button is pressed
@@ -127,7 +127,7 @@ private:
   lv_style_t resetPr;
 
   // external callbacks to interface with odometry
-  std::function<void(QLength x, QLength y, QAngle theta)> stateFnc = nullptr;
+  std::function<void(state_t state)> stateFnc = nullptr;
   std::function<void()> resetFnc = nullptr;
 
   static lv_res_t tileAction(lv_obj_t*); // action when tile is pressed

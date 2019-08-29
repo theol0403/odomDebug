@@ -183,7 +183,7 @@ OdomDebug::OdomDebug(lv_obj_t* parent, lv_color_t mainColor)
   textStyle.text.color = LV_COLOR_WHITE;
   textStyle.text.opa = LV_OPA_100;
   lv_obj_set_style(statusLabel, &textStyle);
-  lv_label_set_text(statusLabel, "Odom Data Needed");
+  lv_label_set_text(statusLabel, "No Odom Data Provided");
   lv_obj_align(statusLabel, container, LV_ALIGN_CENTER, -lv_obj_get_width(container)/2 + (lv_obj_get_width(container) - fieldDim)/2, 0);
 
   /**
@@ -235,7 +235,7 @@ OdomDebug::~OdomDebug() {
  * Sets the function to be called when a tile is pressed
  * @param callback a function that sets the odometry state
  */
-void OdomDebug::setStateCallback(std::function<void(QLength x, QLength y, QAngle theta)> callback) {
+void OdomDebug::setStateCallback(std::function<void(state_t state)> callback) {
   stateFnc = callback;
 }
 
@@ -294,7 +294,7 @@ lv_res_t OdomDebug::tileAction(lv_obj_t* tileObj) {
   int num = lv_obj_get_free_num(tileObj);
   int y = num / 6;
   int x = num - y * 6;
-  if(that->stateFnc) that->stateFnc(x * tile + 0.5_tl, 1_crt - y * tile - 0.5_tl, 0_deg);
+  if(that->stateFnc) that->stateFnc({x * tile + 0.5_tl, 1_crt - y * tile - 0.5_tl, 0_deg});
   else std::cout << "OdomDebug: No tile action callback provided";
   return LV_RES_OK;
 }
