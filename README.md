@@ -70,4 +70,4 @@ display.setData({0, 0, 0}, {0, 0}); // middle sensor ommited
 You can give the state QUnits, or you can give it numbers in these units: inch, inch, radian.
 The last middle sensor paramiter is optional.
 
-The complete example of use is in `opcontrol.cpp`
+The complete example is in `opcontrol.cpp`
