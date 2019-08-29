@@ -1,5 +1,32 @@
 #include "odomDebug.hpp"
 
+/** 
+ * @param ix QLength
+ * @param iy QLength
+ * @param itheta QAngle
+ */ 
+OdomDebug::state_t::state_t(QLength ix, QLength iy, QAngle itheta) : x(ix), y(iy), theta(itheta) {}
+
+/** 
+ * @param ix inches
+ * @param iy inches
+ * @param itheta radians
+ */ 
+OdomDebug::state_t::state_t(double ix, double iy, double itheta) : x(ix * inch), y(iy * inch), theta(itheta * radian) {}
+
+/**
+ * @param ileft the left encoder value
+ * @param iright the right encoder value
+ */
+OdomDebug::sensors_t::sensors_t(double ileft, double iright) : left(ileft), right(iright) {}
+
+/**
+ * @param ileft the left encoder value
+ * @param iright the right encoder value
+ * @param imiddle imiddle the middle encoder value
+ */
+OdomDebug::sensors_t::sensors_t(double ileft, double iright, double imiddle) : left(ileft), right(iright), middle(imiddle) {}
+
 /**
  * Okapi units that represent a tile (2ft) and a court(12ft)
  * Literals are `_tl` and `_crt`, respectivly
@@ -207,7 +234,7 @@ OdomDebug::~OdomDebug() {
  * Sets the function to be called when a tile is pressed
  * @param callback a function that sets the odometry state
  */
-void OdomDebug::stateCallback(std::function<void(QLength x, QLength y, QAngle theta)> callback) {
+void OdomDebug::setStateCallback(std::function<void(QLength x, QLength y, QAngle theta)> callback) {
   stateFnc = callback;
 }
 
@@ -215,7 +242,7 @@ void OdomDebug::stateCallback(std::function<void(QLength x, QLength y, QAngle th
  * Sets the function to be called when the reset button is pressed
  * @param callback a function that resets the odometry and sensors
  */
-void OdomDebug::resetCallback(std::function<void()> callback) {
+void OdomDebug::setResetCallback(std::function<void()> callback) {
   resetFnc = callback;
 }
 
@@ -228,33 +255,36 @@ void OdomDebug::resetCallback(std::function<void()> callback) {
  * @param right  the right encoder value
  * @param middle the middle encoder value
  */
-void OdomDebug::setData(QLength x, QLength y, QAngle theta, double left, double right, double middle) {
-  double cx = x.convert(court);
-  double cy = (1_crt - y).convert(court);
-  double ctheta = theta.convert(radian);
-
-  // place point on field
-  lv_obj_set_pos(led, (cx * fieldDim) - lv_obj_get_width(led)/2, (cy * fieldDim) - lv_obj_get_height(led)/2 - 1);
-
-  // move start and end of line
-  linePoints[0] = {(int16_t)((cx * fieldDim)), (int16_t)((cy * fieldDim) - (lineWidth/2))};
-  double newY = lineLength * cos(ctheta);
-  double newX = lineLength * sin(ctheta);
-  linePoints[1] = {(int16_t)(newX + linePoints[0].x), (int16_t)(-newY + linePoints[0].y)};
-
-  lv_line_set_points(line, linePoints.data(), linePoints.size());
-  lv_obj_invalidate(line);
-
-  std::string text =
-  "X: " + std::to_string(x.convert(foot)) + "\n" +
-  "Y: " + std::to_string(y.convert(foot)) + "\n" +
-  "Theta: " + std::to_string(theta.convert(degree)) + "\n" +
-  "Left: " + std::to_string(left) + "\n" +
-  "Right: " + std::to_string(right) + "\n" +
-  "Middle: " + std::to_string(middle);
-  lv_label_set_text(statusLabel, text.c_str());
-  lv_obj_align(statusLabel, container, LV_ALIGN_CENTER, -lv_obj_get_width(container)/2 + (lv_obj_get_width(container) - fieldDim)/2, 0);
+void OdomDebug::setData(state_t state, sensors_t sensors) {
+  
 }
+// void OdomDebug::setData(QLength x, QLength y, QAngle theta, double left, double right, double middle) {
+//   double cx = x.convert(court);
+//   double cy = (1_crt - y).convert(court);
+//   double ctheta = theta.convert(radian);
+
+//   // place point on field
+//   lv_obj_set_pos(led, (cx * fieldDim) - lv_obj_get_width(led)/2, (cy * fieldDim) - lv_obj_get_height(led)/2 - 1);
+
+//   // move start and end of line
+//   linePoints[0] = {(int16_t)((cx * fieldDim)), (int16_t)((cy * fieldDim) - (lineWidth/2))};
+//   double newY = lineLength * cos(ctheta);
+//   double newX = lineLength * sin(ctheta);
+//   linePoints[1] = {(int16_t)(newX + linePoints[0].x), (int16_t)(-newY + linePoints[0].y)};
+
+//   lv_line_set_points(line, linePoints.data(), linePoints.size());
+//   lv_obj_invalidate(line);
+
+//   std::string text =
+//   "X: " + std::to_string(x.convert(foot)) + "\n" +
+//   "Y: " + std::to_string(y.convert(foot)) + "\n" +
+//   "Theta: " + std::to_string(theta.convert(degree)) + "\n" +
+//   "Left: " + std::to_string(left) + "\n" +
+//   "Right: " + std::to_string(right) + "\n" +
+//   "Middle: " + std::to_string(middle);
+//   lv_label_set_text(statusLabel, text.c_str());
+//   lv_obj_align(statusLabel, container, LV_ALIGN_CENTER, -lv_obj_get_width(container)/2 + (lv_obj_get_width(container) - fieldDim)/2, 0);
+// }
 
 /**
  * Sets the position of the robot and puts the sensor data on the display
@@ -265,9 +295,9 @@ void OdomDebug::setData(QLength x, QLength y, QAngle theta, double left, double 
  * @param right  the right encoder value
  * @param middle the middle encoder value
  */
-void OdomDebug::setData(double x, double y, double theta, double left, double right, double middle) {
-  setData(x * inch, y * inch, theta * radian, left, right, middle);
-}
+// void OdomDebug::setData(double x, double y, double theta, double left, double right, double middle) {
+//   setData(x * inch, y * inch, theta * radian, left, right, middle);
+// }
 
 /**
  * Sets odom state when tile is pressed

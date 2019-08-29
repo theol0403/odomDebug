@@ -17,8 +17,8 @@ void resetSensors() {
 void opcontrol() {
 
 	OdomDebug display(lv_scr_act(), LV_COLOR_ORANGE);
-	display.stateCallback(setState);
-	display.resetCallback(resetSensors);
+	display.setStateCallback(setState);
+	display.setResetCallback(resetSensors);
 
 	while(true) {
 
@@ -29,7 +29,7 @@ void opcontrol() {
     // display.setData(x, y, theta, left, right, middle);
     
     // display.setData(0, 0, 0, 0, 0, 0);
-    // display.setData(0_in, 0_in, 0_deg, 0, 0);
+    display.setData({0_in, 0_in, 0_deg}, {0, 0, 0});
 
     pros::delay(20);
   }

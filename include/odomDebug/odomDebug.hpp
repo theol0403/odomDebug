@@ -6,6 +6,54 @@ class OdomDebug {
 public:
 
   /**
+   * Contains robot state - x, y, theta
+   * Can be initialized using QUnits or doubles
+   */
+  struct state_t {
+    QLength x {0.0};
+    QLength y {0.0};
+    QAngle theta {0.0};
+
+    /** 
+     * @param ix QLength
+     * @param iy QLength
+     * @param itheta QAngle
+     */ 
+    state_t(QLength ix, QLength iy, QAngle itheta);
+    /** 
+     * @param ix inches
+     * @param iy inches
+     * @param itheta radians
+     */ 
+    state_t(double ix, double iy, double itheta);
+  };
+
+  /**
+   * Contains encoder information - left, right, middle(optional)
+   * Can be initialized using three or two sensors
+   */
+  struct sensors_t {
+    double left {0.0};
+    double right {0.0};
+    double middle {0.0};
+    /**
+     * @param ileft the left encoder value
+     * @param iright the right encoder value
+     */
+    sensors_t(double ileft, double iright);
+    /**
+     * @param ileft the left encoder value
+     * @param iright the right encoder value
+     * @param imiddle imiddle the middle encoder value
+     */
+    sensors_t(double ileft, double iright, double imiddle);
+
+  private:
+    bool hasMiddle {false};
+  };
+
+
+  /**
    * Constructs the OdomDebug object.
    * @param parent the lvgl parent, color is inherited
    */
@@ -24,35 +72,20 @@ public:
    * Sets the function to be called when a tile is pressed
    * @param callback a function that sets the odometry state
    */
-  void stateCallback(std::function<void(QLength x, QLength y, QAngle theta)> callback);
+  void setStateCallback(std::function<void(QLength x, QLength y, QAngle theta)> callback);
 
   /**
    * Sets the function to be called when the reset button is pressed
    * @param callback a function that resets the odometry and sensors
    */
-  void resetCallback(std::function<void()> callback);
+  void setResetCallback(std::function<void()> callback);
 
   /**
    * Sets the position of the robot in QUnits and puts the sensor data on the display
-   * @param x      QLength
-   * @param y      QLength
-   * @param theta  QAngle
-   * @param left   the left encoder value
-   * @param right  the right encoder value
-   * @param middle the middle encoder value
+   * @param state   robot state - x, y, theta
+   * @param sensors encoder information - left, right, middle (optional)
    */
-  void setData(QLength x, QLength y, QAngle theta, double left, double right, double middle = 0);
-
-  /**
-   * Sets the position of the robot and puts the sensor data on the display
-   * @param x     inches
-   * @param y     inches
-   * @param theta radians
-   * @param left   the left encoder value
-   * @param right  the right encoder value
-   * @param middle the middle encoder value
-   */
-  void setData(double x, double y, double theta, double left, double right, double middle = 0);
+  void setData(state_t state, sensors_t sensors);
 
 
 private:
