@@ -1,41 +1,42 @@
 #include "main.h"
 #include "odomDebug/odomDebug.hpp"
 
-/**
-* Runs the operator control code. This function will be started in its own task
-* with the default priority and stack size whenever the robot is enabled via
-* the Field Management System or the VEX Competition Switch in the operator
-* control mode.
-*
-* If no competition control is connected, this function will run immediately
-* following initialize().
-*
-* If the robot is disabled or communications is lost, the
-* operator control task will be stopped. Re-enabling the robot will restart the
-* task, not resume it from where it left off.
-*/
+void setState(OdomDebug::state_t state) {
+	// set your odometry position to these cartesian coordenates
+	// to access the values, call `state.x`, `state.y`, and `state.theta`
+	// to convert the QUnits to doubles, call
+	// `state.x.convert(inch)` or `state.theta.convert(radian)`
+	// you can use any length or angle unit
+	// example commands:
+	// odomSetPosition(state.x, state.y, state.theta);
+	// odomSetPosition(state.x.convert(inch), state.y.convert(inch), state.theta.convert(radian));
+}
+
+void resetSensors() {
+	// reset sensors and reset odometry
+	// example commands:
+	// odomResetSensors();
+	// odomSetPosition(0, 0, 0);
+}
+
 void opcontrol() {
 
- auto chassis = ChassisControllerBuilder()
- .withMotors(1, -2)
- .withDimensions({{4_in, 11_in}, imev5RedTPR})
- .withMaxVelocity(50) //so robot does not move too fast
- .withOdometry()
- .buildOdometry();
+	OdomDebug display(lv_scr_act(), LV_COLOR_ORANGE);
+	display.setStateCallback(setState);
+	display.setResetCallback(resetSensors);
 
- Controller controller;
+	while(true) {
 
- OdomDebug display(lv_scr_act(), LV_COLOR_ORANGE, chassis);
+   	// set your odometry data here (position and sensor data)
+   	// you can use QUnits for the x, y, and theta,
+   	// or you can use doubles, in inches and radians
+    // the last `middle` paramiter is optional, depending on your robot
+    // display.setData({x, y, theta}, {left, right, middle});
+    
+    // display.setData({0, 0, 0}, {0, 0});
+    // display.setData({0_in, 0_in, 0_deg}, {0, 0, 0});
 
- // chassis->moveDistance(1_ft);
- // chassis->turnAngle(90_deg);
-
- //arcade code goes here
- while(true) {
- 	chassis->arcade(controller.getAnalog(ControllerAnalog::rightY), controller.getAnalog(ControllerAnalog::leftX));
- 	pros::delay(20);
- }
-
- pros::delay(40000000); //don't go out of scope
+    pros::delay(20);
+  }
 
 }

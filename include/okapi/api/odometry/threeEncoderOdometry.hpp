@@ -1,4 +1,4 @@
-/**
+/*
  * @author Ryan Benasutti, WPI
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -30,7 +30,7 @@ class ThreeEncoderOdometry : public Odometry {
                        std::shared_ptr<ReadOnlyChassisModel> imodel,
                        const ChassisScales &ichassisScales,
                        const QSpeed &iwheelVelDelta = 0.0001_mps,
-                       const std::shared_ptr<Logger> &ilogger = std::make_shared<Logger>());
+                       const std::shared_ptr<Logger> &ilogger = Logger::getDefaultLogger());
 
   protected:
   std::shared_ptr<ReadOnlyChassisModel> model;
@@ -40,7 +40,7 @@ class ThreeEncoderOdometry : public Odometry {
    *
    * @param itickDiff The tick difference from the previous step to this step.
    * @param ideltaT The time difference from the previous step to this step.
-   * @return The estimated position/orientation offset.
+   * @return The newly computed OdomState.
    */
   OdomState odomMathStep(const std::valarray<std::int32_t> &itickDiff,
                          const QTime &ideltaT) override;
