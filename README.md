@@ -59,14 +59,13 @@ display.setStateCallback(setState);
 display.setResetCallback(resetSensors);
 ```
 
-To update the robot's position on the screen, you need to call `setData` in a loop. The syntax to do so is `display.setData({x, y, theta}, {left, right, middle});`
+To update the robot's position on the screen, you need to call `setData` in a loop. The syntax to do so is `display.setData({x, y, theta}, {left, right, middle});`. You can give the state QUnits, or you can give it numbers in these units: `inch, inch, radian`.
+The last middle sensor paramiter is optional.
 
 Here are a few examples:
 ```cpp
 display.setData({0_in, 0_in, 0_deg}, {0, 0, 0}); // QUnits used for state
 display.setData({0, 0, 0}, {0, 0}); // middle sensor ommited
 ```
-You can give the state QUnits, or you can give it numbers in these units: `inch, inch, radian`.
-The last middle sensor paramiter is optional.
 
 The complete example is in `src/opcontrol.cpp`
