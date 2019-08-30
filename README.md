@@ -59,7 +59,9 @@ display.setStateCallback(setState);
 display.setResetCallback(resetSensors);
 ```
 
-To update the robot's position on the screen, you need to call `setData` in a loop. The syntax to do so is `display.setData({x, y, theta}, {left, right, middle});`. You can give the state QUnits, or you can give it numbers in these units: `inch, inch, radian`.
+To update the robot's position on the screen, you need to call `setData` in a loop. The syntax to do so is `display.setData({x, y, theta}, {left, right, middle});`. 
+
+You can give the state QUnits, or you can give it numbers in these units: `inch, inch, radian`.
 The last middle sensor paramiter is optional.
 
 Here are a few examples:
