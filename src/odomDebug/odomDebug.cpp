@@ -272,8 +272,8 @@ void OdomDebug::setData(state_t state, sensors_t sensors) {
   lv_obj_invalidate(line);
 
   std::string text =
-  "X_in: " + std::to_string(state.x.convert(foot)) + "\n" +
-  "Y_in: " + std::to_string(state.y.convert(foot)) + "\n" +
+  "X_in: " + std::to_string(state.x.convert(inch)) + "\n" +
+  "Y_in: " + std::to_string(state.y.convert(inch)) + "\n" +
   "Theta_deg: " + std::to_string(state.theta.convert(degree)) + "\n" +
   "Left: " + std::to_string(sensors.left) + "\n" +
   "Right: " + std::to_string(sensors.right);

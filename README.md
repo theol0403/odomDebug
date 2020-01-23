@@ -6,7 +6,8 @@ Display the robot on a VEX field using odometry and LVGL.
 # Installation in external project
 ### Use pre-built template
 Instead of building the project yourself you can use a pre-built template to apply to your external project.
-Download <a href="https://github.com/theol0403/odomDebug/raw/master/odomDebug%401.1.0.zip" target="_blank">`odomDebug@1.1.0.zip`</a> from the repository and then fetch into PROS as described below.
+Download <a href="https://github.com/theol0403/odomDebug/raw/master/odomDebug%401.1.1.zip" target="_blank">`odomDebug@1.1.1.zip`</a> from the repository and then fetch into PROS as described below.
+
 ### Building
 To build the template yourself, clone the repository and run `prosv5 make template`.
 ### Apply template to project 
